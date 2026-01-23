@@ -1,0 +1,2561 @@
+import React, { useState, useEffect } from 'react';
+
+// ============================================
+// 営業向けビジネスフォンアプリ - 統合プロトタイプ
+// ============================================
+// 全画面を統合し、実際に画面遷移が可能な動作版
+// 
+// 画面構成:
+// - ホーム（ダッシュボード）
+// - 顧客一覧 → 顧客詳細
+// - 電話（ダイヤル/履歴/電話帳）
+// - トーク（統合タイムライン）→ メッセージング
+// - 設定
+// - 発信確認 → 通話中 → 通話終了
+// - 着信画面
+// ============================================
+
+// アイコンコンポーネント
+const Icons = {
+  Home: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  Users: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  Phone: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+  MessageCircle: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>,
+  Settings: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+  ChevronLeft: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
+  ChevronRight: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+  Search: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  AlertTriangle: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  Clock: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  PhoneIncoming: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 2 16 8 22 8"/><line x1="23" y1="1" x2="16" y2="8"/><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+  PhoneOutgoing: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 7 23 1 17 1"/><line x1="16" y1="8" x2="23" y2="1"/><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+  PhoneOff: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>,
+  Mic: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>,
+  MicOff: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>,
+  Volume2: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>,
+  User: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Star: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  Send: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+  X: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  Check: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  Bell: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  Shield: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  Zap: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+  Building: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>,
+  Mail: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+  Calendar: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  FileText: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+  Sparkles: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L14.5 8.5L20 9L16 13.5L17 19L12 16L7 19L8 13.5L4 9L9.5 8.5L12 3Z"/></svg>,
+  TrendingUp: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+  MoreVertical: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>,
+};
+
+// ダミーデータ
+const mockCustomers = [
+  { id: 1, name: '山田 太郎', company: '株式会社ABC商事', phone: '090-1234-5678', status: 'hot', lastContact: '2025-01-20', riskLevel: 'high', amount: '¥5,000,000', verified: true },
+  { id: 2, name: '佐藤 花子', company: '田中建設株式会社', phone: '080-9876-5432', status: 'warm', lastContact: '2025-01-18', riskLevel: 'low', amount: '¥2,500,000', verified: true },
+  { id: 3, name: '鈴木 一郎', company: '鈴木電機工業', phone: '070-5555-1234', status: 'cold', lastContact: '2025-01-10', riskLevel: 'medium', amount: '¥1,200,000', verified: false },
+  { id: 4, name: '田中 美咲', company: 'グローバルテック', phone: '090-3333-7777', status: 'hot', lastContact: '2025-01-21', riskLevel: 'low', amount: '¥8,000,000', verified: true },
+  { id: 5, name: '高橋 健一', company: 'ネクストイノベーション', phone: '080-1111-2222', status: 'warm', lastContact: '2025-01-15', riskLevel: 'high', amount: '¥3,500,000', verified: false },
+];
+
+const mockCallHistory = [
+  { id: 1, name: '山田 太郎', time: '10:30', duration: '5:23', type: 'incoming', company: '株式会社ABC商事' },
+  { id: 2, name: '佐藤 花子', time: '09:15', duration: '12:45', type: 'outgoing', company: '田中建設株式会社' },
+  { id: 3, name: '不明', time: '昨日', duration: '0:45', type: 'missed', company: '' },
+  { id: 4, name: '鈴木 一郎', time: '昨日', duration: '8:30', type: 'incoming', company: '鈴木電機工業' },
+];
+
+const mockConversations = [
+  { id: 1, name: '山田 太郎', lastMessage: '見積書をご確認ください', time: '10:30', unread: 2, channel: 'line', company: '株式会社ABC商事' },
+  { id: 2, name: '佐藤 花子', lastMessage: 'お電話ありがとうございました', time: '09:15', unread: 0, channel: 'sms', company: '田中建設株式会社' },
+  { id: 3, name: '田中 美咲', lastMessage: '契約書について確認です', time: '昨日', unread: 1, channel: 'line', company: 'グローバルテック' },
+];
+
+const mockNotifications = [
+  { id: 1, type: 'risk', message: '山田太郎様との通話でNGワード検出', time: '10分前', priority: 'high' },
+  { id: 2, type: 'task', message: '佐藤花子様 フォローアップ期限', time: '1時間前', priority: 'medium' },
+  { id: 3, type: 'info', message: '新規リード: 鈴木電機工業', time: '2時間前', priority: 'low' },
+];
+
+// ============================================
+// ボトムナビゲーション
+// ============================================
+function BottomNav({ activeTab, onTabChange }) {
+  const tabs = [
+    { id: 'home', icon: Icons.Home, label: 'ホーム' },
+    { id: 'customers', icon: Icons.Users, label: '顧客' },
+    { id: 'phone', icon: Icons.Phone, label: '電話' },
+    { id: 'talk', icon: Icons.MessageCircle, label: 'トーク' },
+    { id: 'settings', icon: Icons.Settings, label: '設定' },
+  ];
+
+  return (
+    <nav className="bottom-nav">
+      {tabs.map(tab => {
+        const Icon = tab.icon;
+        return (
+          <button
+            key={tab.id}
+            className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => onTabChange(tab.id)}
+          >
+            <Icon />
+            <span>{tab.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ============================================
+// ホーム画面
+// ============================================
+function HomeScreen({ onNavigate }) {
+  return (
+    <div className="screen home-screen">
+      <header className="screen-header">
+        <h1>ホーム</h1>
+        <div className="header-actions">
+          <button className="icon-btn"><Icons.Bell /></button>
+        </div>
+      </header>
+      
+      <div className="screen-content">
+        {/* 通知セクション */}
+        <section className="section">
+          <h2 className="section-title"><Icons.AlertTriangle /> 要対応</h2>
+          <div className="alert-cards">
+            {mockNotifications.filter(n => n.priority === 'high').map(n => (
+              <div key={n.id} className="alert-card high">
+                <div className="alert-icon"><Icons.AlertTriangle /></div>
+                <div className="alert-content">
+                  <p>{n.message}</p>
+                  <span className="alert-time">{n.time}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* KPIカード */}
+        <section className="section">
+          <h2 className="section-title"><Icons.TrendingUp /> 本日のKPI</h2>
+          <div className="kpi-grid">
+            <div className="kpi-card">
+              <span className="kpi-value">12</span>
+              <span className="kpi-label">通話数</span>
+            </div>
+            <div className="kpi-card">
+              <span className="kpi-value">3</span>
+              <span className="kpi-label">商談数</span>
+            </div>
+            <div className="kpi-card">
+              <span className="kpi-value">¥5.2M</span>
+              <span className="kpi-label">受注見込</span>
+            </div>
+          </div>
+        </section>
+
+        {/* 直近の顧客 */}
+        <section className="section">
+          <h2 className="section-title"><Icons.Clock /> 直近のアクティビティ</h2>
+          <div className="activity-list">
+            {mockCustomers.slice(0, 3).map(customer => (
+              <div 
+                key={customer.id} 
+                className="activity-item"
+                onClick={() => onNavigate('customer-detail', { customer })}
+              >
+                <div className="avatar">{customer.name[0]}</div>
+                <div className="activity-info">
+                  <span className="activity-name">{customer.name}</span>
+                  <span className="activity-company">{customer.company}</span>
+                </div>
+                <span className="activity-time">{customer.lastContact}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// 顧客一覧画面
+// ============================================
+function CustomerListScreen({ onNavigate }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState('all');
+
+  const filteredCustomers = mockCustomers.filter(c => {
+    const matchesSearch = c.name.includes(searchQuery) || c.company.includes(searchQuery);
+    const matchesFilter = filter === 'all' || c.status === filter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const statusColors = { hot: '#ef4444', warm: '#f59e0b', cold: '#3b82f6' };
+  const statusLabels = { hot: 'HOT', warm: 'WARM', cold: 'COLD' };
+
+  return (
+    <div className="screen customer-list-screen">
+      <header className="screen-header">
+        <h1>顧客</h1>
+      </header>
+
+      <div className="screen-content">
+        {/* 検索バー */}
+        <div className="search-bar">
+          <Icons.Search />
+          <input 
+            type="text" 
+            placeholder="顧客名・会社名で検索" 
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        {/* フィルター */}
+        <div className="filter-tabs">
+          {['all', 'hot', 'warm', 'cold'].map(f => (
+            <button 
+              key={f}
+              className={`filter-tab ${filter === f ? 'active' : ''}`}
+              onClick={() => setFilter(f)}
+            >
+              {f === 'all' ? 'すべて' : statusLabels[f]}
+            </button>
+          ))}
+        </div>
+
+        {/* 顧客リスト */}
+        <div className="customer-list">
+          {filteredCustomers.map(customer => (
+            <div 
+              key={customer.id} 
+              className="customer-item"
+              onClick={() => onNavigate('customer-detail', { customer })}
+            >
+              <div className="customer-avatar">{customer.name[0]}</div>
+              <div className="customer-info">
+                <div className="customer-header">
+                  <span className="customer-name">{customer.name}</span>
+                  <span 
+                    className="status-badge"
+                    style={{ background: statusColors[customer.status] }}
+                  >
+                    {statusLabels[customer.status]}
+                  </span>
+                </div>
+                <span className="customer-company">{customer.company}</span>
+                <div className="customer-meta">
+                  <span className="customer-amount">{customer.amount}</span>
+                  <span className="customer-date">最終: {customer.lastContact}</span>
+                </div>
+              </div>
+              <Icons.ChevronRight />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// 顧客詳細画面
+// ============================================
+function CustomerDetailScreen({ customer, onBack, onNavigate }) {
+  const riskColors = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
+  const riskLabels = { high: '高リスク', medium: '中リスク', low: '低リスク' };
+
+  const timeline = [
+    { type: 'call', time: '2025-01-20 10:30', content: '商品説明の電話', duration: '15:32' },
+    { type: 'line', time: '2025-01-18 14:00', content: '見積書送付', channel: 'LINE' },
+    { type: 'call', time: '2025-01-15 09:00', content: '初回ヒアリング', duration: '25:10' },
+    { type: 'sms', time: '2025-01-10 11:30', content: 'アポイント確認SMS', channel: 'SMS' },
+  ];
+
+  return (
+    <div className="screen customer-detail-screen">
+      <header className="screen-header with-back">
+        <button className="back-btn" onClick={onBack}><Icons.ChevronLeft /></button>
+        <h1>顧客詳細</h1>
+        <button className="icon-btn"><Icons.MoreVertical /></button>
+      </header>
+
+      <div className="screen-content">
+        {/* プロフィールカード */}
+        <div className="profile-card">
+          <div className="profile-avatar">{customer.name[0]}</div>
+          <div className="profile-info">
+            <h2>{customer.name}</h2>
+            <p>{customer.company}</p>
+            <div className="profile-badges">
+              {customer.verified && (
+                <span className="badge verified"><Icons.Shield /> 本人確認済</span>
+              )}
+              <span className="badge risk" style={{ background: riskColors[customer.riskLevel] }}>
+                {riskLabels[customer.riskLevel]}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* アクションボタン */}
+        <div className="action-buttons">
+          <button 
+            className="action-btn call"
+            onClick={() => onNavigate('dial', { customer })}
+          >
+            <Icons.Phone />
+            <span>電話</span>
+          </button>
+          <button 
+            className="action-btn message"
+            onClick={() => onNavigate('messaging', { customer })}
+          >
+            <Icons.MessageCircle />
+            <span>メッセージ</span>
+          </button>
+          <button className="action-btn email">
+            <Icons.Mail />
+            <span>メール</span>
+          </button>
+        </div>
+
+        {/* 基本情報 */}
+        <section className="section">
+          <h3 className="section-title">基本情報</h3>
+          <div className="info-list">
+            <div className="info-row">
+              <span className="info-label">電話番号</span>
+              <span className="info-value">{customer.phone}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">商談金額</span>
+              <span className="info-value">{customer.amount}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">最終コンタクト</span>
+              <span className="info-value">{customer.lastContact}</span>
+            </div>
+          </div>
+        </section>
+
+        {/* AI推奨アクション */}
+        <section className="section">
+          <h3 className="section-title"><Icons.Sparkles /> AI推奨アクション</h3>
+          <div className="ai-recommendation">
+            <p>前回の商談から3日経過しています。フォローアップの電話をお勧めします。</p>
+            <button 
+              className="ai-action-btn"
+              onClick={() => onNavigate('dial', { customer })}
+            >
+              今すぐ電話する
+            </button>
+          </div>
+        </section>
+
+        {/* 統合タイムライン */}
+        <section className="section">
+          <h3 className="section-title"><Icons.Clock /> 対応履歴</h3>
+          <div className="timeline">
+            {timeline.map((item, index) => (
+              <div key={index} className={`timeline-item ${item.type}`}>
+                <div className="timeline-icon">
+                  {item.type === 'call' ? <Icons.Phone /> : <Icons.MessageCircle />}
+                </div>
+                <div className="timeline-content">
+                  <span className="timeline-time">{item.time}</span>
+                  <p className="timeline-text">{item.content}</p>
+                  {item.duration && <span className="timeline-duration">{item.duration}</span>}
+                  {item.channel && <span className="timeline-channel">{item.channel}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// 電話画面
+// ============================================
+function PhoneScreen({ onNavigate }) {
+  const [activeTab, setActiveTab] = useState('dial');
+  const [dialNumber, setDialNumber] = useState('');
+
+  const handleDial = (num) => {
+    setDialNumber(prev => prev + num);
+  };
+
+  const handleDelete = () => {
+    setDialNumber(prev => prev.slice(0, -1));
+  };
+
+  const handleCall = () => {
+    if (dialNumber) {
+      onNavigate('dial', { phone: dialNumber });
+    }
+  };
+
+  return (
+    <div className="screen phone-screen">
+      <header className="screen-header">
+        <h1>電話</h1>
+      </header>
+
+      <div className="phone-tabs">
+        <button 
+          className={`phone-tab ${activeTab === 'dial' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dial')}
+        >
+          ダイヤル
+        </button>
+        <button 
+          className={`phone-tab ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
+        >
+          履歴
+        </button>
+        <button 
+          className={`phone-tab ${activeTab === 'contacts' ? 'active' : ''}`}
+          onClick={() => setActiveTab('contacts')}
+        >
+          電話帳
+        </button>
+      </div>
+
+      <div className="screen-content">
+        {activeTab === 'dial' && (
+          <div className="dial-pad-container">
+            <div className="dial-display">
+              <span className="dial-number">{dialNumber || '番号を入力'}</span>
+            </div>
+            <div className="dial-pad">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'].map(num => (
+                <button key={num} className="dial-btn" onClick={() => handleDial(num)}>
+                  {num}
+                </button>
+              ))}
+            </div>
+            <div className="dial-actions">
+              <button className="dial-delete" onClick={handleDelete}>
+                <Icons.ChevronLeft />
+              </button>
+              <button className="dial-call" onClick={handleCall}>
+                <Icons.Phone />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="call-history">
+            {mockCallHistory.map(call => (
+              <div 
+                key={call.id} 
+                className="history-item"
+                onClick={() => onNavigate('dial', { phone: call.name, customer: mockCustomers.find(c => c.name === call.name) })}
+              >
+                <div className={`call-icon ${call.type}`}>
+                  {call.type === 'incoming' && <Icons.PhoneIncoming />}
+                  {call.type === 'outgoing' && <Icons.PhoneOutgoing />}
+                  {call.type === 'missed' && <Icons.PhoneOff />}
+                </div>
+                <div className="history-info">
+                  <span className="history-name">{call.name}</span>
+                  <span className="history-company">{call.company}</span>
+                </div>
+                <div className="history-meta">
+                  <span className="history-time">{call.time}</span>
+                  <span className="history-duration">{call.duration}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'contacts' && (
+          <div className="contacts-list">
+            {mockCustomers.map(customer => (
+              <div 
+                key={customer.id} 
+                className="contact-item"
+                onClick={() => onNavigate('dial', { customer })}
+              >
+                <div className="contact-avatar">{customer.name[0]}</div>
+                <div className="contact-info">
+                  <span className="contact-name">{customer.name}</span>
+                  <span className="contact-phone">{customer.phone}</span>
+                </div>
+                <button className="contact-call">
+                  <Icons.Phone />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// トーク画面
+// ============================================
+function TalkScreen({ onNavigate }) {
+  return (
+    <div className="screen talk-screen">
+      <header className="screen-header">
+        <h1>トーク</h1>
+      </header>
+
+      <div className="screen-content">
+        <div className="conversation-list">
+          {mockConversations.map(conv => (
+            <div 
+              key={conv.id} 
+              className="conversation-item"
+              onClick={() => onNavigate('messaging', { 
+                customer: mockCustomers.find(c => c.name === conv.name) 
+              })}
+            >
+              <div className="conv-avatar">
+                {conv.name[0]}
+                <span className={`channel-badge ${conv.channel}`}>
+                  {conv.channel === 'line' ? 'L' : 'S'}
+                </span>
+              </div>
+              <div className="conv-info">
+                <div className="conv-header">
+                  <span className="conv-name">{conv.name}</span>
+                  <span className="conv-time">{conv.time}</span>
+                </div>
+                <span className="conv-company">{conv.company}</span>
+                <p className="conv-message">{conv.lastMessage}</p>
+              </div>
+              {conv.unread > 0 && (
+                <span className="unread-badge">{conv.unread}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// メッセージング画面
+// ============================================
+function MessagingScreen({ customer, onBack }) {
+  const [message, setMessage] = useState('');
+  const [channel, setChannel] = useState('line');
+
+  const messages = [
+    { id: 1, type: 'received', text: 'お世話になっております。見積書の件でご連絡しました。', time: '14:00' },
+    { id: 2, type: 'sent', text: '見積書を添付いたします。ご確認お願いいたします。', time: '14:05' },
+    { id: 3, type: 'received', text: 'ありがとうございます。確認いたします。', time: '14:10' },
+  ];
+
+  return (
+    <div className="screen messaging-screen">
+      <header className="screen-header with-back">
+        <button className="back-btn" onClick={onBack}><Icons.ChevronLeft /></button>
+        <div className="header-info">
+          <h1>{customer?.name || '顧客名'}</h1>
+          <span className="header-subtitle">{customer?.company || ''}</span>
+        </div>
+        <button className="icon-btn" onClick={() => {}}>
+          <Icons.Phone />
+        </button>
+      </header>
+
+      <div className="channel-selector">
+        <button 
+          className={`channel-btn ${channel === 'line' ? 'active' : ''}`}
+          onClick={() => setChannel('line')}
+        >
+          LINE
+        </button>
+        <button 
+          className={`channel-btn ${channel === 'sms' ? 'active' : ''}`}
+          onClick={() => setChannel('sms')}
+        >
+          SMS
+        </button>
+      </div>
+
+      <div className="messages-container">
+        {messages.map(msg => (
+          <div key={msg.id} className={`message ${msg.type}`}>
+            <div className="message-bubble">
+              <p>{msg.text}</p>
+              <span className="message-time">{msg.time}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="message-input-container">
+        <input 
+          type="text" 
+          placeholder="メッセージを入力..." 
+          value={message}
+          onChange={e => setMessage(e.target.value)}
+        />
+        <button className="send-btn">
+          <Icons.Send />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// 発信確認画面
+// ============================================
+function DialScreen({ customer, phone, onBack, onNavigate }) {
+  const displayName = customer?.name || phone || '発信先';
+  const displayCompany = customer?.company || '';
+  const displayPhone = customer?.phone || phone || '';
+
+  const handleCall = () => {
+    onNavigate('calling', { customer, phone });
+  };
+
+  return (
+    <div className="screen dial-screen">
+      <header className="screen-header with-back">
+        <button className="back-btn" onClick={onBack}><Icons.ChevronLeft /></button>
+        <h1>発信確認</h1>
+      </header>
+
+      <div className="screen-content dial-content">
+        <div className="dial-profile">
+          <div className="dial-avatar">{displayName[0]}</div>
+          <h2>{displayName}</h2>
+          {displayCompany && <p className="dial-company">{displayCompany}</p>}
+          <p className="dial-phone">{displayPhone}</p>
+        </div>
+
+        {customer && (
+          <div className="dial-info-card">
+            <h3><Icons.Sparkles /> CRM情報</h3>
+            <div className="dial-info-row">
+              <span>商談金額</span>
+              <span>{customer.amount}</span>
+            </div>
+            <div className="dial-info-row">
+              <span>最終コンタクト</span>
+              <span>{customer.lastContact}</span>
+            </div>
+            {customer.verified && (
+              <div className="dial-verified">
+                <Icons.Shield /> 本人確認済み
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="dial-actions-large">
+          <button className="cancel-btn" onClick={onBack}>
+            キャンセル
+          </button>
+          <button className="call-btn-large" onClick={handleCall}>
+            <Icons.Phone />
+            発信する
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// 着信画面
+// ============================================
+function IncomingCallScreen({ customer, onAnswer, onDecline }) {
+  return (
+    <div className="screen incoming-call-screen">
+      <div className="incoming-content">
+        <span className="incoming-label">着信中...</span>
+        <div className="incoming-avatar">{customer?.name?.[0] || '?'}</div>
+        <h2>{customer?.name || '不明な発信者'}</h2>
+        {customer?.company && <p>{customer.company}</p>}
+        {customer?.phone && <p className="incoming-phone">{customer.phone}</p>}
+
+        {customer && (
+          <div className="incoming-crm-preview">
+            <div className="crm-row">
+              <span>商談金額</span>
+              <span>{customer.amount}</span>
+            </div>
+            {customer.verified && (
+              <div className="crm-verified">
+                <Icons.Shield /> 本人確認済み
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="incoming-actions">
+          <button className="decline-btn" onClick={onDecline}>
+            <Icons.PhoneOff />
+          </button>
+          <button className="answer-btn" onClick={onAnswer}>
+            <Icons.Phone />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// 通話中画面
+// ============================================
+function CallScreen({ customer, phone, onEnd }) {
+  const [duration, setDuration] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isSpeaker, setIsSpeaker] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDuration(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatDuration = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const aiSuggestions = [
+    '契約更新の提案タイミングです',
+    '前回の課題をフォローアップ',
+    'アップセル商品のご案内',
+  ];
+
+  return (
+    <div className="screen call-screen">
+      <div className="call-content">
+        <span className="call-status">通話中</span>
+        <span className="call-duration">{formatDuration(duration)}</span>
+
+        <div className="call-avatar">{customer?.name?.[0] || phone?.[0] || '?'}</div>
+        <h2>{customer?.name || phone || '通話先'}</h2>
+        {customer?.company && <p>{customer.company}</p>}
+
+        {/* AI Live Assist */}
+        <div className="ai-assist-panel">
+          <div className="ai-assist-header">
+            <Icons.Sparkles />
+            <span>AI Live Assist</span>
+          </div>
+          <div className="ai-suggestions">
+            {aiSuggestions.map((suggestion, index) => (
+              <div key={index} className="ai-suggestion">
+                <Icons.Zap />
+                <span>{suggestion}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 通話コントロール */}
+        <div className="call-controls">
+          <button 
+            className={`control-btn ${isMuted ? 'active' : ''}`}
+            onClick={() => setIsMuted(!isMuted)}
+          >
+            {isMuted ? <Icons.MicOff /> : <Icons.Mic />}
+            <span>ミュート</span>
+          </button>
+          <button 
+            className={`control-btn ${isSpeaker ? 'active' : ''}`}
+            onClick={() => setIsSpeaker(!isSpeaker)}
+          >
+            <Icons.Volume2 />
+            <span>スピーカー</span>
+          </button>
+        </div>
+
+        <button className="end-call-btn" onClick={onEnd}>
+          <Icons.PhoneOff />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// 通話終了画面
+// ============================================
+function CallEndScreen({ customer, duration, onDone }) {
+  const aiSummary = {
+    summary: '商品説明を実施。価格面での検討を希望。来週までに見積書送付予定。',
+    keywords: ['価格検討', '見積書', '来週フォロー'],
+    nextAction: 'フォローアップ電話（1週間後）',
+  };
+
+  return (
+    <div className="screen call-end-screen">
+      <header className="screen-header">
+        <h1>通話終了</h1>
+      </header>
+
+      <div className="screen-content">
+        <div className="end-profile">
+          <div className="end-avatar">{customer?.name?.[0] || '?'}</div>
+          <h2>{customer?.name || '通話先'}</h2>
+          {customer?.company && <p>{customer.company}</p>}
+          <span className="end-duration">{duration || '05:23'}</span>
+        </div>
+
+        {/* AI要約 */}
+        <div className="ai-summary-card">
+          <h3><Icons.Sparkles /> AI通話要約</h3>
+          <p className="summary-text">{aiSummary.summary}</p>
+          
+          <div className="summary-keywords">
+            <span className="keywords-label">キーワード</span>
+            <div className="keywords-list">
+              {aiSummary.keywords.map((kw, i) => (
+                <span key={i} className="keyword-tag">{kw}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="next-action">
+            <span className="next-label">推奨アクション</span>
+            <p>{aiSummary.nextAction}</p>
+          </div>
+        </div>
+
+        {/* アクションボタン */}
+        <div className="end-actions">
+          <button className="secondary-btn">
+            <Icons.Calendar />
+            フォロー予定を登録
+          </button>
+          <button className="secondary-btn">
+            <Icons.FileText />
+            詳細を編集
+          </button>
+          <button className="primary-btn" onClick={onDone}>
+            完了
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// 設定画面
+// ============================================
+function SettingsScreen() {
+  const settingsItems = [
+    { icon: Icons.User, label: 'プロフィール', value: '吉田 太郎' },
+    { icon: Icons.Bell, label: '通知設定', value: '' },
+    { icon: Icons.Shield, label: 'Salesforce連携', value: '接続中', connected: true },
+    { icon: Icons.Phone, label: 'YouWire連携', value: '接続中', connected: true },
+  ];
+
+  return (
+    <div className="screen settings-screen">
+      <header className="screen-header">
+        <h1>設定</h1>
+      </header>
+
+      <div className="screen-content">
+        <div className="settings-section">
+          <h3>アカウント</h3>
+          {settingsItems.slice(0, 2).map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <div key={index} className="settings-item">
+                <Icon />
+                <span className="settings-label">{item.label}</span>
+                <span className="settings-value">{item.value}</span>
+                <Icons.ChevronRight />
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="settings-section">
+          <h3>連携</h3>
+          {settingsItems.slice(2).map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <div key={index} className="settings-item">
+                <Icon />
+                <span className="settings-label">{item.label}</span>
+                <span className={`settings-status ${item.connected ? 'connected' : ''}`}>
+                  {item.value}
+                </span>
+                <Icons.ChevronRight />
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="settings-section">
+          <h3>その他</h3>
+          <div className="settings-item">
+            <Icons.FileText />
+            <span className="settings-label">ヘルプ</span>
+            <Icons.ChevronRight />
+          </div>
+          <div className="settings-item">
+            <span className="settings-label">バージョン</span>
+            <span className="settings-value">1.0.0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// メインアプリ
+// ============================================
+export default function BusinessPhoneApp() {
+  const [activeTab, setActiveTab] = useState('home');
+  const [screenStack, setScreenStack] = useState([{ screen: 'home' }]);
+  const [showIncomingCall, setShowIncomingCall] = useState(false);
+  const [incomingCustomer, setIncomingCustomer] = useState(null);
+
+  const currentScreen = screenStack[screenStack.length - 1];
+
+  const handleNavigate = (screen, params = {}) => {
+    setScreenStack(prev => [...prev, { screen, ...params }]);
+  };
+
+  const handleBack = () => {
+    if (screenStack.length > 1) {
+      setScreenStack(prev => prev.slice(0, -1));
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setScreenStack([{ screen: tab }]);
+  };
+
+  // 着信デモ
+  const simulateIncomingCall = () => {
+    setIncomingCustomer(mockCustomers[0]);
+    setShowIncomingCall(true);
+  };
+
+  const handleAnswerCall = () => {
+    setShowIncomingCall(false);
+    handleNavigate('calling', { customer: incomingCustomer });
+  };
+
+  const handleDeclineCall = () => {
+    setShowIncomingCall(false);
+    setIncomingCustomer(null);
+  };
+
+  const handleEndCall = () => {
+    const customer = currentScreen.customer;
+    setScreenStack(prev => prev.slice(0, -1));
+    handleNavigate('call-end', { customer, duration: '05:23' });
+  };
+
+  const handleCallEndDone = () => {
+    setActiveTab('home');
+    setScreenStack([{ screen: 'home' }]);
+  };
+
+  // 画面レンダリング
+  const renderScreen = () => {
+    if (showIncomingCall) {
+      return (
+        <IncomingCallScreen 
+          customer={incomingCustomer}
+          onAnswer={handleAnswerCall}
+          onDecline={handleDeclineCall}
+        />
+      );
+    }
+
+    switch (currentScreen.screen) {
+      case 'home':
+        return <HomeScreen onNavigate={handleNavigate} />;
+      case 'customers':
+        return <CustomerListScreen onNavigate={handleNavigate} />;
+      case 'customer-detail':
+        return (
+          <CustomerDetailScreen 
+            customer={currentScreen.customer} 
+            onBack={handleBack}
+            onNavigate={handleNavigate}
+          />
+        );
+      case 'phone':
+        return <PhoneScreen onNavigate={handleNavigate} />;
+      case 'talk':
+        return <TalkScreen onNavigate={handleNavigate} />;
+      case 'messaging':
+        return (
+          <MessagingScreen 
+            customer={currentScreen.customer}
+            onBack={handleBack}
+          />
+        );
+      case 'dial':
+        return (
+          <DialScreen 
+            customer={currentScreen.customer}
+            phone={currentScreen.phone}
+            onBack={handleBack}
+            onNavigate={handleNavigate}
+          />
+        );
+      case 'calling':
+        return (
+          <CallScreen 
+            customer={currentScreen.customer}
+            phone={currentScreen.phone}
+            onEnd={handleEndCall}
+          />
+        );
+      case 'call-end':
+        return (
+          <CallEndScreen 
+            customer={currentScreen.customer}
+            duration={currentScreen.duration}
+            onDone={handleCallEndDone}
+          />
+        );
+      case 'settings':
+        return <SettingsScreen />;
+      default:
+        return <HomeScreen onNavigate={handleNavigate} />;
+    }
+  };
+
+  const showBottomNav = !['calling', 'dial', 'customer-detail', 'messaging', 'call-end'].includes(currentScreen.screen) && !showIncomingCall;
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+          --primary: #2563eb;
+          --primary-dark: #1d4ed8;
+          --success: #22c55e;
+          --warning: #f59e0b;
+          --danger: #ef4444;
+          --bg: #f8fafc;
+          --bg-card: #ffffff;
+          --text-primary: #0f172a;
+          --text-secondary: #64748b;
+          --text-tertiary: #94a3b8;
+          --border: #e2e8f0;
+          --call-green: #22c55e;
+          --call-red: #ef4444;
+        }
+
+        .app-container {
+          font-family: 'Noto Sans JP', sans-serif;
+          background: var(--bg);
+          min-height: 100vh;
+          max-width: 430px;
+          margin: 0 auto;
+          position: relative;
+          overflow-x: hidden;
+        }
+
+        /* Screen */
+        .screen {
+          min-height: 100vh;
+          padding-bottom: 80px;
+          background: var(--bg);
+        }
+
+        .screen-header {
+          position: sticky;
+          top: 0;
+          background: var(--bg-card);
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          z-index: 10;
+        }
+
+        .screen-header h1 {
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .screen-header.with-back {
+          justify-content: flex-start;
+          gap: 12px;
+        }
+
+        .screen-header.with-back h1 {
+          flex: 1;
+        }
+
+        .back-btn, .icon-btn {
+          background: none;
+          border: none;
+          padding: 8px;
+          border-radius: 8px;
+          color: var(--text-secondary);
+          cursor: pointer;
+        }
+
+        .back-btn:hover, .icon-btn:hover {
+          background: var(--bg);
+        }
+
+        .header-info {
+          flex: 1;
+        }
+
+        .header-subtitle {
+          font-size: 12px;
+          color: var(--text-tertiary);
+        }
+
+        .screen-content {
+          padding: 16px 20px;
+        }
+
+        /* Section */
+        .section {
+          margin-bottom: 24px;
+        }
+
+        .section-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .section-title svg {
+          width: 16px;
+          height: 16px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+          position: fixed;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100%;
+          max-width: 430px;
+          background: var(--bg-card);
+          border-top: 1px solid var(--border);
+          display: flex;
+          justify-content: space-around;
+          padding: 8px 0 20px;
+          z-index: 100;
+        }
+
+        .nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          background: none;
+          border: none;
+          padding: 8px 16px;
+          color: var(--text-tertiary);
+          cursor: pointer;
+          transition: color 0.2s;
+        }
+
+        .nav-item.active {
+          color: var(--primary);
+        }
+
+        .nav-item span {
+          font-size: 10px;
+          font-weight: 500;
+        }
+
+        /* Avatar */
+        .avatar, .customer-avatar, .profile-avatar, .dial-avatar, .call-avatar, .end-avatar, .incoming-avatar, .contact-avatar, .conv-avatar {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: var(--primary);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 16px;
+          flex-shrink: 0;
+        }
+
+        .profile-avatar, .dial-avatar, .call-avatar, .end-avatar, .incoming-avatar {
+          width: 80px;
+          height: 80px;
+          font-size: 32px;
+        }
+
+        /* Alert Cards */
+        .alert-cards {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .alert-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          background: var(--bg-card);
+          border-radius: 12px;
+          border-left: 4px solid var(--danger);
+        }
+
+        .alert-card.high {
+          border-left-color: var(--danger);
+        }
+
+        .alert-icon {
+          color: var(--danger);
+        }
+
+        .alert-content p {
+          font-size: 14px;
+          color: var(--text-primary);
+          margin-bottom: 4px;
+        }
+
+        .alert-time {
+          font-size: 12px;
+          color: var(--text-tertiary);
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+
+        .kpi-card {
+          background: var(--bg-card);
+          border-radius: 12px;
+          padding: 16px;
+          text-align: center;
+        }
+
+        .kpi-value {
+          display: block;
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--primary);
+        }
+
+        .kpi-label {
+          font-size: 12px;
+          color: var(--text-secondary);
+        }
+
+        /* Activity List */
+        .activity-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .activity-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          background: var(--bg-card);
+          border-radius: 12px;
+          cursor: pointer;
+        }
+
+        .activity-info {
+          flex: 1;
+        }
+
+        .activity-name {
+          display: block;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .activity-company {
+          font-size: 12px;
+          color: var(--text-secondary);
+        }
+
+        .activity-time {
+          font-size: 12px;
+          color: var(--text-tertiary);
+        }
+
+        /* Search Bar */
+        .search-bar {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: var(--bg-card);
+          border-radius: 12px;
+          margin-bottom: 16px;
+        }
+
+        .search-bar svg {
+          color: var(--text-tertiary);
+          width: 20px;
+          height: 20px;
+        }
+
+        .search-bar input {
+          flex: 1;
+          border: none;
+          outline: none;
+          font-size: 14px;
+          color: var(--text-primary);
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 16px;
+        }
+
+        .filter-tab {
+          padding: 8px 16px;
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          background: var(--bg-card);
+          color: var(--text-secondary);
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .filter-tab.active {
+          background: var(--primary);
+          color: white;
+          border-color: var(--primary);
+        }
+
+        /* Customer List */
+        .customer-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .customer-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: var(--bg-card);
+          border-radius: 12px;
+          cursor: pointer;
+        }
+
+        .customer-info {
+          flex: 1;
+        }
+
+        .customer-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 4px;
+        }
+
+        .customer-name {
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .status-badge {
+          font-size: 10px;
+          padding: 2px 8px;
+          border-radius: 10px;
+          color: white;
+          font-weight: 600;
+        }
+
+        .customer-company {
+          display: block;
+          font-size: 13px;
+          color: var(--text-secondary);
+          margin-bottom: 4px;
+        }
+
+        .customer-meta {
+          display: flex;
+          gap: 12px;
+          font-size: 12px;
+          color: var(--text-tertiary);
+        }
+
+        .customer-amount {
+          font-weight: 600;
+          color: var(--primary);
+        }
+
+        /* Profile Card */
+        .profile-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 24px;
+          background: var(--bg-card);
+          border-radius: 16px;
+          margin-bottom: 16px;
+        }
+
+        .profile-info {
+          text-align: center;
+          margin-top: 12px;
+        }
+
+        .profile-info h2 {
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .profile-info p {
+          font-size: 14px;
+          color: var(--text-secondary);
+          margin-top: 4px;
+        }
+
+        .profile-badges {
+          display: flex;
+          gap: 8px;
+          margin-top: 12px;
+        }
+
+        .badge {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .badge.verified {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .badge.risk {
+          color: white;
+        }
+
+        .badge svg {
+          width: 12px;
+          height: 12px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 24px;
+        }
+
+        .action-btn {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 16px;
+          border-radius: 12px;
+          border: none;
+          cursor: pointer;
+          transition: transform 0.2s;
+        }
+
+        .action-btn:active {
+          transform: scale(0.95);
+        }
+
+        .action-btn.call {
+          background: var(--call-green);
+          color: white;
+        }
+
+        .action-btn.message {
+          background: var(--primary);
+          color: white;
+        }
+
+        .action-btn.email {
+          background: var(--bg);
+          color: var(--text-primary);
+          border: 1px solid var(--border);
+        }
+
+        .action-btn span {
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        /* Info List */
+        .info-list {
+          background: var(--bg-card);
+          border-radius: 12px;
+          overflow: hidden;
+        }
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .info-row:last-child {
+          border-bottom: none;
+        }
+
+        .info-label {
+          color: var(--text-secondary);
+          font-size: 14px;
+        }
+
+        .info-value {
+          color: var(--text-primary);
+          font-weight: 500;
+          font-size: 14px;
+        }
+
+        /* AI Recommendation */
+        .ai-recommendation {
+          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+          border-radius: 12px;
+          padding: 16px;
+        }
+
+        .ai-recommendation p {
+          font-size: 14px;
+          color: var(--text-primary);
+          margin-bottom: 12px;
+        }
+
+        .ai-action-btn {
+          width: 100%;
+          padding: 12px;
+          background: var(--primary);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        /* Timeline */
+        .timeline {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .timeline-item {
+          display: flex;
+          gap: 12px;
+        }
+
+        .timeline-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: var(--bg);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .timeline-item.call .timeline-icon {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .timeline-item.line .timeline-icon, .timeline-item.sms .timeline-icon {
+          background: #dbeafe;
+          color: #1e40af;
+        }
+
+        .timeline-content {
+          flex: 1;
+          background: var(--bg-card);
+          border-radius: 12px;
+          padding: 12px;
+        }
+
+        .timeline-time {
+          font-size: 12px;
+          color: var(--text-tertiary);
+        }
+
+        .timeline-text {
+          font-size: 14px;
+          color: var(--text-primary);
+          margin-top: 4px;
+        }
+
+        .timeline-duration, .timeline-channel {
+          display: inline-block;
+          margin-top: 8px;
+          font-size: 12px;
+          padding: 2px 8px;
+          border-radius: 4px;
+          background: var(--bg);
+          color: var(--text-secondary);
+        }
+
+        /* Phone Screen */
+        .phone-tabs {
+          display: flex;
+          background: var(--bg-card);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .phone-tab {
+          flex: 1;
+          padding: 12px;
+          background: none;
+          border: none;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          cursor: pointer;
+          border-bottom: 2px solid transparent;
+        }
+
+        .phone-tab.active {
+          color: var(--primary);
+          border-bottom-color: var(--primary);
+        }
+
+        /* Dial Pad */
+        .dial-pad-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding-top: 20px;
+        }
+
+        .dial-display {
+          margin-bottom: 24px;
+          text-align: center;
+        }
+
+        .dial-number {
+          font-size: 28px;
+          font-weight: 500;
+          color: var(--text-primary);
+          letter-spacing: 2px;
+        }
+
+        .dial-pad {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+          max-width: 280px;
+        }
+
+        .dial-btn {
+          width: 72px;
+          height: 72px;
+          border-radius: 50%;
+          background: var(--bg-card);
+          border: none;
+          font-size: 24px;
+          font-weight: 500;
+          color: var(--text-primary);
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .dial-btn:active {
+          background: var(--border);
+        }
+
+        .dial-actions {
+          display: flex;
+          gap: 48px;
+          margin-top: 24px;
+        }
+
+        .dial-delete {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: var(--bg);
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+        }
+
+        .dial-call {
+          width: 72px;
+          height: 72px;
+          border-radius: 50%;
+          background: var(--call-green);
+          border: none;
+          color: white;
+          cursor: pointer;
+        }
+
+        /* Call History */
+        .call-history, .contacts-list {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .history-item, .contact-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          border-bottom: 1px solid var(--border);
+          cursor: pointer;
+        }
+
+        .call-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .call-icon.incoming {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .call-icon.outgoing {
+          background: #dbeafe;
+          color: #1e40af;
+        }
+
+        .call-icon.missed {
+          background: #fee2e2;
+          color: #991b1b;
+        }
+
+        .history-info, .contact-info {
+          flex: 1;
+        }
+
+        .history-name, .contact-name {
+          display: block;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .history-company, .contact-phone {
+          font-size: 12px;
+          color: var(--text-secondary);
+        }
+
+        .history-meta {
+          text-align: right;
+        }
+
+        .history-time {
+          display: block;
+          font-size: 12px;
+          color: var(--text-tertiary);
+        }
+
+        .history-duration {
+          font-size: 12px;
+          color: var(--text-secondary);
+        }
+
+        .contact-call {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: var(--call-green);
+          border: none;
+          color: white;
+          cursor: pointer;
+        }
+
+        /* Conversation List */
+        .conversation-list {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .conversation-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          border-bottom: 1px solid var(--border);
+          cursor: pointer;
+        }
+
+        .conv-avatar {
+          position: relative;
+        }
+
+        .channel-badge {
+          position: absolute;
+          bottom: -2px;
+          right: -2px;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          font-size: 10px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+        }
+
+        .channel-badge.line {
+          background: #06c755;
+        }
+
+        .channel-badge.sms {
+          background: #3b82f6;
+        }
+
+        .conv-info {
+          flex: 1;
+        }
+
+        .conv-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 2px;
+        }
+
+        .conv-name {
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .conv-time {
+          font-size: 12px;
+          color: var(--text-tertiary);
+        }
+
+        .conv-company {
+          display: block;
+          font-size: 12px;
+          color: var(--text-secondary);
+          margin-bottom: 4px;
+        }
+
+        .conv-message {
+          font-size: 13px;
+          color: var(--text-secondary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .unread-badge {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: var(--danger);
+          color: white;
+          font-size: 11px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* Messaging Screen */
+        .channel-selector {
+          display: flex;
+          padding: 8px 20px;
+          gap: 8px;
+          background: var(--bg-card);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .channel-btn {
+          padding: 8px 20px;
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          background: var(--bg);
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+        }
+
+        .channel-btn.active {
+          background: var(--primary);
+          color: white;
+          border-color: var(--primary);
+        }
+
+        .messages-container {
+          flex: 1;
+          padding: 16px 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          overflow-y: auto;
+          height: calc(100vh - 200px);
+        }
+
+        .message {
+          display: flex;
+        }
+
+        .message.sent {
+          justify-content: flex-end;
+        }
+
+        .message-bubble {
+          max-width: 75%;
+          padding: 12px 16px;
+          border-radius: 16px;
+          background: var(--bg);
+        }
+
+        .message.sent .message-bubble {
+          background: var(--primary);
+          color: white;
+        }
+
+        .message-bubble p {
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .message-time {
+          display: block;
+          font-size: 11px;
+          opacity: 0.7;
+          margin-top: 4px;
+          text-align: right;
+        }
+
+        .message-input-container {
+          display: flex;
+          gap: 8px;
+          padding: 12px 20px;
+          background: var(--bg-card);
+          border-top: 1px solid var(--border);
+        }
+
+        .message-input-container input {
+          flex: 1;
+          padding: 12px 16px;
+          border-radius: 24px;
+          border: 1px solid var(--border);
+          font-size: 14px;
+          outline: none;
+        }
+
+        .send-btn {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: var(--primary);
+          border: none;
+          color: white;
+          cursor: pointer;
+        }
+
+        /* Dial Screen */
+        .dial-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding-top: 40px;
+        }
+
+        .dial-profile {
+          text-align: center;
+          margin-bottom: 24px;
+        }
+
+        .dial-profile h2 {
+          font-size: 24px;
+          font-weight: 700;
+          margin-top: 16px;
+        }
+
+        .dial-company {
+          color: var(--text-secondary);
+          margin-top: 4px;
+        }
+
+        .dial-phone {
+          color: var(--text-tertiary);
+          margin-top: 8px;
+          font-size: 18px;
+        }
+
+        .dial-info-card {
+          width: 100%;
+          background: var(--bg-card);
+          border-radius: 16px;
+          padding: 20px;
+          margin-bottom: 24px;
+        }
+
+        .dial-info-card h3 {
+          font-size: 14px;
+          color: var(--text-secondary);
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .dial-info-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          font-size: 14px;
+        }
+
+        .dial-info-row span:first-child {
+          color: var(--text-secondary);
+        }
+
+        .dial-info-row span:last-child {
+          color: var(--text-primary);
+          font-weight: 500;
+        }
+
+        .dial-verified {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 12px;
+          padding: 8px 12px;
+          background: #dcfce7;
+          border-radius: 8px;
+          color: #166534;
+          font-size: 13px;
+          font-weight: 500;
+        }
+
+        .dial-actions-large {
+          display: flex;
+          gap: 16px;
+          width: 100%;
+          margin-top: auto;
+          padding-bottom: 40px;
+        }
+
+        .cancel-btn {
+          flex: 1;
+          padding: 16px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          background: var(--bg-card);
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .call-btn-large {
+          flex: 2;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 16px;
+          border-radius: 12px;
+          background: var(--call-green);
+          border: none;
+          color: white;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        /* Incoming Call Screen */
+        .incoming-call-screen {
+          background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-bottom: 0;
+        }
+
+        .incoming-content {
+          text-align: center;
+          color: white;
+        }
+
+        .incoming-label {
+          display: block;
+          font-size: 14px;
+          opacity: 0.8;
+          margin-bottom: 24px;
+        }
+
+        .incoming-avatar {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          margin: 0 auto 16px;
+        }
+
+        .incoming-content h2 {
+          font-size: 28px;
+          font-weight: 700;
+          margin-bottom: 8px;
+        }
+
+        .incoming-content p {
+          opacity: 0.8;
+        }
+
+        .incoming-phone {
+          font-size: 18px;
+          margin-top: 8px;
+          letter-spacing: 1px;
+        }
+
+        .incoming-crm-preview {
+          margin-top: 24px;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+        }
+
+        .crm-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          font-size: 14px;
+        }
+
+        .crm-row span:first-child {
+          opacity: 0.7;
+        }
+
+        .crm-verified {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 8px;
+          padding: 8px;
+          background: rgba(34, 197, 94, 0.2);
+          border-radius: 8px;
+          color: #86efac;
+          font-size: 13px;
+        }
+
+        .incoming-actions {
+          display: flex;
+          justify-content: center;
+          gap: 48px;
+          margin-top: 48px;
+        }
+
+        .decline-btn, .answer-btn {
+          width: 72px;
+          height: 72px;
+          border-radius: 50%;
+          border: none;
+          color: white;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .decline-btn {
+          background: var(--call-red);
+        }
+
+        .answer-btn {
+          background: var(--call-green);
+        }
+
+        /* Call Screen */
+        .call-screen {
+          background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+          padding-bottom: 0;
+        }
+
+        .call-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 40px 20px;
+          color: white;
+          min-height: 100vh;
+        }
+
+        .call-status {
+          font-size: 14px;
+          opacity: 0.8;
+        }
+
+        .call-duration {
+          font-size: 18px;
+          font-weight: 600;
+          margin-top: 8px;
+          margin-bottom: 24px;
+        }
+
+        .call-avatar {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          margin-bottom: 16px;
+        }
+
+        .call-content h2 {
+          font-size: 24px;
+          font-weight: 700;
+        }
+
+        .call-content p {
+          opacity: 0.8;
+          margin-top: 4px;
+        }
+
+        /* AI Assist Panel */
+        .ai-assist-panel {
+          width: 100%;
+          margin-top: 32px;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+        }
+
+        .ai-assist-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 12px;
+          color: #fbbf24;
+        }
+
+        .ai-suggestions {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .ai-suggestion {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          font-size: 13px;
+        }
+
+        .ai-suggestion svg {
+          color: #fbbf24;
+          width: 14px;
+          height: 14px;
+        }
+
+        /* Call Controls */
+        .call-controls {
+          display: flex;
+          gap: 32px;
+          margin-top: 32px;
+        }
+
+        .control-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+        }
+
+        .control-btn svg {
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 50%;
+        }
+
+        .control-btn.active svg {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        .control-btn span {
+          font-size: 12px;
+          opacity: 0.8;
+        }
+
+        .end-call-btn {
+          width: 72px;
+          height: 72px;
+          border-radius: 50%;
+          background: var(--call-red);
+          border: none;
+          color: white;
+          margin-top: auto;
+          margin-bottom: 40px;
+          cursor: pointer;
+        }
+
+        /* Call End Screen */
+        .end-profile {
+          text-align: center;
+          margin-bottom: 24px;
+        }
+
+        .end-avatar {
+          margin: 0 auto 16px;
+        }
+
+        .end-profile h2 {
+          font-size: 20px;
+          font-weight: 700;
+        }
+
+        .end-profile p {
+          color: var(--text-secondary);
+          margin-top: 4px;
+        }
+
+        .end-duration {
+          display: inline-block;
+          margin-top: 12px;
+          padding: 4px 16px;
+          background: var(--bg);
+          border-radius: 20px;
+          font-size: 14px;
+          color: var(--text-secondary);
+        }
+
+        /* AI Summary Card */
+        .ai-summary-card {
+          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+          border-radius: 16px;
+          padding: 20px;
+          margin-bottom: 24px;
+        }
+
+        .ai-summary-card h3 {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+          color: var(--primary);
+          margin-bottom: 12px;
+        }
+
+        .summary-text {
+          font-size: 14px;
+          line-height: 1.6;
+          color: var(--text-primary);
+          margin-bottom: 16px;
+        }
+
+        .summary-keywords {
+          margin-bottom: 16px;
+        }
+
+        .keywords-label, .next-label {
+          display: block;
+          font-size: 12px;
+          color: var(--text-secondary);
+          margin-bottom: 8px;
+        }
+
+        .keywords-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .keyword-tag {
+          padding: 4px 12px;
+          background: white;
+          border-radius: 20px;
+          font-size: 12px;
+          color: var(--primary);
+          font-weight: 500;
+        }
+
+        .next-action p {
+          font-size: 14px;
+          color: var(--text-primary);
+          font-weight: 500;
+        }
+
+        /* End Actions */
+        .end-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .secondary-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 14px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-primary);
+          cursor: pointer;
+        }
+
+        .primary-btn {
+          padding: 16px;
+          background: var(--primary);
+          border: none;
+          border-radius: 12px;
+          font-size: 16px;
+          font-weight: 600;
+          color: white;
+          cursor: pointer;
+        }
+
+        /* Settings Screen */
+        .settings-section {
+          margin-bottom: 24px;
+        }
+
+        .settings-section h3 {
+          font-size: 12px;
+          color: var(--text-tertiary);
+          text-transform: uppercase;
+          padding: 8px 16px;
+          margin-bottom: 4px;
+        }
+
+        .settings-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: var(--bg-card);
+          border-bottom: 1px solid var(--border);
+          cursor: pointer;
+        }
+
+        .settings-item:first-of-type {
+          border-radius: 12px 12px 0 0;
+        }
+
+        .settings-item:last-of-type {
+          border-radius: 0 0 12px 12px;
+          border-bottom: none;
+        }
+
+        .settings-item svg {
+          color: var(--text-secondary);
+        }
+
+        .settings-label {
+          flex: 1;
+          font-size: 15px;
+          color: var(--text-primary);
+        }
+
+        .settings-value {
+          font-size: 14px;
+          color: var(--text-tertiary);
+        }
+
+        .settings-status {
+          font-size: 13px;
+          color: var(--text-tertiary);
+        }
+
+        .settings-status.connected {
+          color: var(--success);
+        }
+
+        /* Demo FAB */
+        .demo-fab {
+          position: fixed;
+          bottom: 100px;
+          right: 20px;
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: var(--warning);
+          color: white;
+          border: none;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          cursor: pointer;
+          z-index: 99;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        @media (min-width: 431px) {
+          .app-container {
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+          }
+        }
+      `}</style>
+
+      <div className="app-container">
+        {renderScreen()}
+        {showBottomNav && <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />}
+        {showBottomNav && (
+          <button className="demo-fab" onClick={simulateIncomingCall} title="着信デモ">
+            <Icons.PhoneIncoming />
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
