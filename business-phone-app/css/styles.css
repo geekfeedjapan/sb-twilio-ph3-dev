@@ -56,6 +56,21 @@
   color: var(--text-primary);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions .icon-btn {
+  position: relative;
+  z-index: 1;
+}
+
+.header-actions .icon-btn svg {
+  pointer-events: none;
+}
+
 .screen-header.with-back {
   justify-content: flex-start;
   gap: 12px;
