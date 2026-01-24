@@ -1,31 +1,73 @@
 // ホーム画面
 function renderHomeScreen() {
-  const highPriorityNotifications = mockNotifications.filter(n => n.priority === 'high');
-  
+  const highPriorityNotifications = mockNotifications.filter(n => n.priority === 'high' && !n.read);
+  const unreadNotificationCount = mockNotifications.filter(n => !n.read).length;
+
+  // 今日のタスクを取得
+  const today = new Date().toISOString().split('T')[0];
+  const todayTasks = mockTasks.filter(t => !t.completed && t.dueDate <= today);
+  const overdueTasks = mockTasks.filter(t => !t.completed && t.dueDate < today);
+
   return `
     <div class="screen home-screen">
       <header class="screen-header">
         <h1>ホーム</h1>
         <div class="header-actions">
-          <button class="icon-btn">${getIcon('Bell')}</button>
+          <button class="icon-btn notification-btn" onclick="navigate('notifications')">
+            ${getIcon('Bell')}
+            ${unreadNotificationCount > 0 ? `<span class="notification-badge">${unreadNotificationCount}</span>` : ''}
+          </button>
         </div>
       </header>
-      
+
       <div class="screen-content">
-        <section class="section">
-          <h2 class="section-title">${getIcon('AlertTriangle')} 要対応</h2>
-          <div class="alert-cards">
-            ${highPriorityNotifications.map(n => `
-              <div class="alert-card high">
-                <div class="alert-icon">${getIcon('AlertTriangle')}</div>
-                <div class="alert-content">
-                  <p>${n.message}</p>
-                  <span class="alert-time">${n.time}</span>
+        ${todayTasks.length > 0 ? `
+          <section class="section task-summary-section" onclick="navigate('tasks')">
+            <h2 class="section-title">${getIcon('Calendar')} 今日のタスク</h2>
+            <div class="task-summary-cards">
+              ${overdueTasks.length > 0 ? `
+                <div class="task-summary-card overdue">
+                  <span class="task-count">${overdueTasks.length}</span>
+                  <span class="task-label">期限切れ</span>
                 </div>
+              ` : ''}
+              <div class="task-summary-card today">
+                <span class="task-count">${todayTasks.length}</span>
+                <span class="task-label">要対応</span>
               </div>
-            `).join('')}
-          </div>
-        </section>
+            </div>
+            <div class="task-preview-list">
+              ${todayTasks.slice(0, 2).map(task => `
+                <div class="task-preview-item ${task.dueDate < today ? 'overdue' : ''}">
+                  <div class="task-preview-icon">${getTaskIcon(task.type)}</div>
+                  <div class="task-preview-content">
+                    <span class="task-preview-title">${task.title}</span>
+                    <span class="task-preview-customer">${task.customerName}</span>
+                  </div>
+                  <span class="task-preview-time">${task.dueTime}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div class="view-all-link">すべて表示 ${getIcon('ChevronRight')}</div>
+          </section>
+        ` : ''}
+
+        ${highPriorityNotifications.length > 0 ? `
+          <section class="section">
+            <h2 class="section-title">${getIcon('AlertTriangle')} 要対応</h2>
+            <div class="alert-cards">
+              ${highPriorityNotifications.map(n => `
+                <div class="alert-card high" onclick="navigate('notifications')">
+                  <div class="alert-icon">${getIcon('AlertTriangle')}</div>
+                  <div class="alert-content">
+                    <p>${n.message}</p>
+                    <span class="alert-time">${n.time}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        ` : ''}
 
         <section class="section">
           <h2 class="section-title">${getIcon('TrendingUp')} 本日のKPI</h2>
@@ -63,4 +105,16 @@ function renderHomeScreen() {
       </div>
     </div>
   `;
+}
+
+// タスクタイプに応じたアイコンを取得
+function getTaskIcon(type) {
+  switch (type) {
+    case 'follow_up_call': return getIcon('Phone');
+    case 'send_quote': return getIcon('FileText');
+    case 'send_materials': return getIcon('Send');
+    case 'schedule_meeting': return getIcon('Calendar');
+    case 'close_deal': return getIcon('CheckCircle');
+    default: return getIcon('Clock');
+  }
 }

@@ -4,6 +4,9 @@ let activityType = 'call';
 let activityResult = 'connected';
 let activityNextAction = '';
 let activityTranscriptExpanded = false;
+let activityReminderEnabled = false;
+let activityReminderDate = '';
+let activityReminderTime = '09:00';
 
 function renderActivityRegistrationScreen(customer, duration, transcription, recordingUrl) {
   const resultOptions = [
@@ -122,6 +125,34 @@ function renderActivityRegistrationScreen(customer, duration, transcription, rec
           </select>
         </div>
 
+        ${activityNextAction && activityNextAction !== 'none' ? `
+          <div class="form-section reminder-section">
+            <div class="reminder-toggle">
+              <label class="section-label">${getIcon('Bell')} リマインダー設定</label>
+              <button class="toggle-btn ${activityReminderEnabled ? 'active' : ''}" onclick="toggleReminder()">
+                ${activityReminderEnabled ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            ${activityReminderEnabled ? `
+              <div class="reminder-settings">
+                <div class="reminder-quick-options">
+                  <button class="quick-option-btn ${isReminderQuickOption(1) ? 'active' : ''}" onclick="setReminderQuick(1)">明日</button>
+                  <button class="quick-option-btn ${isReminderQuickOption(3) ? 'active' : ''}" onclick="setReminderQuick(3)">3日後</button>
+                  <button class="quick-option-btn ${isReminderQuickOption(7) ? 'active' : ''}" onclick="setReminderQuick(7)">1週間後</button>
+                </div>
+                <div class="reminder-datetime">
+                  <input type="date" class="reminder-date-input" value="${activityReminderDate}" onchange="setReminderDate(this.value)" min="${getTomorrowDate()}" />
+                  <input type="time" class="reminder-time-input" value="${activityReminderTime}" onchange="setReminderTime(this.value)" />
+                </div>
+                <p class="reminder-preview">
+                  ${activityReminderDate ? `${getIcon('Clock')} ${formatReminderPreview(activityReminderDate, activityReminderTime)}` : '日時を選択してください'}
+                </p>
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+
         <button class="save-activity-btn" onclick="saveActivity()">
           ${getIcon('Check')} 活動を保存
         </button>
@@ -146,6 +177,66 @@ function updateActivityNote(value) {
 
 function setNextAction(action) {
   activityNextAction = action;
+  // アクションを変更したらリマインダーをリセット
+  if (!action || action === 'none') {
+    activityReminderEnabled = false;
+  }
+  render();
+}
+
+function toggleReminder() {
+  activityReminderEnabled = !activityReminderEnabled;
+  if (activityReminderEnabled && !activityReminderDate) {
+    // デフォルトで1週間後を設定
+    setReminderQuick(7);
+  }
+  render();
+}
+
+function setReminderDate(date) {
+  activityReminderDate = date;
+}
+
+function setReminderTime(time) {
+  activityReminderTime = time;
+}
+
+function setReminderQuick(days) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  activityReminderDate = date.toISOString().split('T')[0];
+  render();
+}
+
+function getTomorrowDate() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return tomorrow.toISOString().split('T')[0];
+}
+
+function isReminderQuickOption(days) {
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + days);
+  return activityReminderDate === targetDate.toISOString().split('T')[0];
+}
+
+function formatReminderPreview(date, time) {
+  const d = new Date(date + 'T' + time);
+  const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+  const dateStr = d.toLocaleDateString('ja-JP', options);
+  return `${dateStr} ${time} にリマインド`;
+}
+
+function getNextActionLabel(action) {
+  const labels = {
+    follow_up_call: 'フォローアップ電話',
+    send_quote: '見積書送付',
+    send_materials: '資料送付',
+    schedule_meeting: '打ち合わせ設定',
+    close_deal: '契約締結',
+    none: 'なし'
+  };
+  return labels[action] || action;
 }
 
 function saveActivity() {
@@ -172,7 +263,31 @@ function saveActivity() {
     mockActivities.unshift(activity);
   }
 
-  alert('活動を保存しました（デモ）');
+  // リマインダーが有効な場合はタスクを作成
+  if (activityReminderEnabled && activityReminderDate && activityNextAction && activityNextAction !== 'none') {
+    const task = {
+      id: Date.now() + 1,
+      customerId: currentScreen.customer.id,
+      customerName: currentScreen.customer.name,
+      company: currentScreen.customer.company,
+      type: activityNextAction,
+      title: getNextActionLabel(activityNextAction),
+      note: activityNote.substring(0, 50) + (activityNote.length > 50 ? '...' : ''),
+      dueDate: activityReminderDate,
+      dueTime: activityReminderTime,
+      createdAt: new Date().toISOString(),
+      completed: false,
+      activityId: activity.id
+    };
+
+    if (typeof mockTasks !== 'undefined') {
+      mockTasks.unshift(task);
+    }
+
+    alert(`活動を保存しました。${formatReminderPreview(activityReminderDate, activityReminderTime)}（デモ）`);
+  } else {
+    alert('活動を保存しました（デモ）');
+  }
 
   // 状態リセット
   resetActivityForm();
@@ -207,4 +322,7 @@ function resetActivityForm() {
   activityResult = 'connected';
   activityNextAction = '';
   activityTranscriptExpanded = false;
+  activityReminderEnabled = false;
+  activityReminderDate = '';
+  activityReminderTime = '09:00';
 }
