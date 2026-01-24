@@ -135,7 +135,69 @@ const mockConversations = [
 ];
 
 const mockNotifications = [
-  { id: 1, type: 'risk', message: '山田太郎様との通話でNGワード検出', time: '10分前', priority: 'high' },
-  { id: 2, type: 'task', message: '佐藤花子様 フォローアップ期限', time: '1時間前', priority: 'medium' },
-  { id: 3, type: 'info', message: '新規リード: 鈴木電機工業', time: '2時間前', priority: 'low' },
+  { id: 1, type: 'risk', message: '山田太郎様との通話でNGワード検出', time: '10分前', timestamp: '2025-01-24T10:20:00', priority: 'high', read: false },
+  { id: 2, type: 'system', message: '佐藤花子様との契約が承認されました', time: '1時間前', timestamp: '2025-01-24T09:30:00', priority: 'medium', read: false },
+  { id: 3, type: 'info', message: '新規リード: 鈴木電機工業', time: '2時間前', timestamp: '2025-01-24T08:30:00', priority: 'low', read: true },
+  { id: 4, type: 'risk', message: '高橋健一様のリスクレベルが上昇', time: '3時間前', timestamp: '2025-01-24T07:30:00', priority: 'high', read: true },
+  { id: 5, type: 'info', message: '本日の目標達成率: 80%', time: '昨日', timestamp: '2025-01-23T18:00:00', priority: 'low', read: true },
+];
+
+// タスク/リマインダー（ユーザーが設定したフォローアップ予定）
+const mockTasks = [
+  {
+    id: 1,
+    customerId: 1,
+    customerName: '山田 太郎',
+    company: '株式会社ABC商事',
+    type: 'follow_up_call',
+    title: 'フォローアップ電話',
+    note: '見積書について確認の電話',
+    dueDate: '2025-01-31',
+    dueTime: '10:00',
+    createdAt: '2025-01-24T10:30:00',
+    completed: false,
+    activityId: 1
+  },
+  {
+    id: 2,
+    customerId: 2,
+    customerName: '佐藤 花子',
+    company: '田中建設株式会社',
+    type: 'close_deal',
+    title: '契約締結',
+    note: '契約書の最終確認と締結',
+    dueDate: '2025-01-27',
+    dueTime: '14:00',
+    createdAt: '2025-01-24T09:15:00',
+    completed: false,
+    activityId: 2
+  },
+  {
+    id: 3,
+    customerId: 4,
+    customerName: '田中 美咲',
+    company: 'グローバルテック',
+    type: 'send_materials',
+    title: '資料送付',
+    note: '詳細提案資料をメールで送付',
+    dueDate: '2025-01-25',
+    dueTime: '09:00',
+    createdAt: '2025-01-22T11:30:00',
+    completed: false,
+    activityId: 3
+  },
+  {
+    id: 4,
+    customerId: 3,
+    customerName: '鈴木 一郎',
+    company: '鈴木電機工業',
+    type: 'follow_up_call',
+    title: 'フォローアップ電話',
+    note: '先月の提案について再度連絡',
+    dueDate: '2025-01-24',
+    dueTime: '15:00',
+    createdAt: '2025-01-20T10:00:00',
+    completed: false,
+    activityId: null
+  },
 ];
