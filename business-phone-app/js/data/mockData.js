@@ -28,10 +28,104 @@ const mockCustomers = [
 ];
 
 const mockCallHistory = [
-  { id: 1, name: '山田 太郎', time: '10:30', duration: '5:23', type: 'incoming', company: '株式会社ABC商事' },
-  { id: 2, name: '佐藤 花子', time: '09:15', duration: '12:45', type: 'outgoing', company: '田中建設株式会社' },
-  { id: 3, name: '不明', time: '昨日', duration: '0:45', type: 'missed', company: '' },
-  { id: 4, name: '鈴木 一郎', time: '昨日', duration: '8:30', type: 'incoming', company: '鈴木電機工業' },
+  {
+    id: 1,
+    name: '山田 太郎',
+    time: '10:30',
+    date: '2025-01-24',
+    duration: '5:23',
+    type: 'incoming',
+    company: '株式会社ABC商事',
+    recordingUrl: 'https://softbank.youwire.jp/recording/rec001',
+    hasTranscription: true
+  },
+  {
+    id: 2,
+    name: '佐藤 花子',
+    time: '09:15',
+    date: '2025-01-24',
+    duration: '12:45',
+    type: 'outgoing',
+    company: '田中建設株式会社',
+    recordingUrl: 'https://softbank.youwire.jp/recording/rec002',
+    hasTranscription: true
+  },
+  {
+    id: 3,
+    name: '不明',
+    time: '18:20',
+    date: '2025-01-23',
+    duration: '0:45',
+    type: 'missed',
+    company: '',
+    recordingUrl: null,
+    hasTranscription: false
+  },
+  {
+    id: 4,
+    name: '鈴木 一郎',
+    time: '14:00',
+    date: '2025-01-23',
+    duration: '8:30',
+    type: 'incoming',
+    company: '鈴木電機工業',
+    recordingUrl: 'https://softbank.youwire.jp/recording/rec004',
+    hasTranscription: true
+  },
+  {
+    id: 5,
+    name: '田中 美咲',
+    time: '11:30',
+    date: '2025-01-22',
+    duration: '15:20',
+    type: 'outgoing',
+    company: 'グローバルテック',
+    recordingUrl: 'https://softbank.youwire.jp/recording/rec005',
+    hasTranscription: true
+  },
+];
+
+// 活動履歴
+const mockActivities = [
+  {
+    id: 1,
+    customerId: 1,
+    customerName: '山田 太郎',
+    company: '株式会社ABC商事',
+    type: 'call',
+    result: 'connected',
+    note: '商品説明を実施。価格面での検討を希望。来週までに見積書送付予定。',
+    nextAction: 'send_quote',
+    duration: '5:23',
+    recordingUrl: 'https://softbank.youwire.jp/recording/rec001',
+    createdAt: '2025-01-24T10:30:00'
+  },
+  {
+    id: 2,
+    customerId: 2,
+    customerName: '佐藤 花子',
+    company: '田中建設株式会社',
+    type: 'call',
+    result: 'connected',
+    note: '契約内容の最終確認。来週月曜に契約締結予定。決裁は完了済み。',
+    nextAction: 'close_deal',
+    duration: '12:45',
+    recordingUrl: 'https://softbank.youwire.jp/recording/rec002',
+    createdAt: '2025-01-24T09:15:00'
+  },
+  {
+    id: 3,
+    customerId: 4,
+    customerName: '田中 美咲',
+    company: 'グローバルテック',
+    type: 'call',
+    result: 'connected',
+    note: '新規プロジェクトの提案。興味あり。詳細資料を希望。',
+    nextAction: 'send_materials',
+    duration: '15:20',
+    recordingUrl: 'https://softbank.youwire.jp/recording/rec005',
+    createdAt: '2025-01-22T11:30:00'
+  },
 ];
 
 const mockConversations = [

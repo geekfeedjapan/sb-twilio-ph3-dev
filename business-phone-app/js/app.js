@@ -110,7 +110,7 @@ function shouldShowBottomNav() {
   if (!AppState.isAuthenticated) return false;
 
   const currentScreen = getCurrentScreen();
-  const hideNavScreens = ['calling', 'dial', 'customer-detail', 'messaging', 'call-end', 'incoming', 'user-profile'];
+  const hideNavScreens = ['calling', 'dial', 'customer-detail', 'messaging', 'call-end', 'incoming', 'user-profile', 'activity-registration', 'call-detail'];
   return !hideNavScreens.includes(currentScreen.screen) && !AppState.showIncomingCall;
 }
 
@@ -168,6 +168,17 @@ function render() {
         break;
       case 'user-profile':
         content = renderUserProfileScreen();
+        break;
+      case 'activity-registration':
+        content = renderActivityRegistrationScreen(
+          currentScreen.customer,
+          currentScreen.duration,
+          currentScreen.transcription,
+          currentScreen.recordingUrl
+        );
+        break;
+      case 'call-detail':
+        content = renderCallDetailScreen(currentScreen.call);
         break;
       default:
         content = renderHomeScreen();
