@@ -18,13 +18,13 @@ function renderLoginScreen() {
           ${loginError ? `<div class="login-error">${getIcon('AlertTriangle')} ${loginError}</div>` : ''}
 
           <div class="form-group">
-            <label for="email">メールアドレス</label>
+            <label for="login-id">ID</label>
             <div class="input-wrapper">
-              ${getIcon('Mail')}
+              ${getIcon('User')}
               <input
-                type="email"
-                id="email"
-                placeholder="example@company.com"
+                type="text"
+                id="login-id"
+                placeholder="IDを入力"
                 value="${loginEmail}"
                 onchange="updateLoginEmail(this.value)"
                 required
@@ -54,11 +54,6 @@ function renderLoginScreen() {
 
           <a href="#" class="forgot-password" onclick="handleForgotPassword(event)">パスワードをお忘れの方</a>
         </form>
-
-        <div class="login-footer">
-          <p>アカウントをお持ちでない方は</p>
-          <a href="#" onclick="handleSignUp(event)">新規登録</a>
-        </div>
       </div>
     </div>
   `;
@@ -82,7 +77,7 @@ function handleLogin(event) {
 
   // バリデーション
   if (!loginEmail || !loginPassword) {
-    loginError = 'メールアドレスとパスワードを入力してください';
+    loginError = 'IDとパスワードを入力してください';
     render();
     return;
   }
