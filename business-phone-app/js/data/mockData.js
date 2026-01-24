@@ -1,4 +1,24 @@
 // ダミーデータ
+
+// ログインユーザー情報
+const mockUser = {
+  id: 1,
+  name: '吉田 太郎',
+  email: 'yoshida@example.com',
+  phone: '090-1234-5678',
+  department: '営業部',
+  position: '主任',
+  avatar: null,
+  twoFactorEnabled: true,
+  twoFactorMethod: 'sms', // 'sms' | 'email' | 'app'
+  lastLogin: '2025-01-24 09:30',
+  loginHistory: [
+    { date: '2025-01-24 09:30', device: 'iPhone 15', location: '東京都' },
+    { date: '2025-01-23 08:45', device: 'MacBook Pro', location: '東京都' },
+    { date: '2025-01-22 10:15', device: 'iPhone 15', location: '大阪府' },
+  ]
+};
+
 const mockCustomers = [
   { id: 1, name: '山田 太郎', company: '株式会社ABC商事', phone: '090-1234-5678', status: 'hot', lastContact: '2025-01-20', riskLevel: 'high', amount: '¥5,000,000', verified: true },
   { id: 2, name: '佐藤 花子', company: '田中建設株式会社', phone: '080-9876-5432', status: 'warm', lastContact: '2025-01-18', riskLevel: 'low', amount: '¥2,500,000', verified: true },
