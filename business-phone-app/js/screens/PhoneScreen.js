@@ -48,27 +48,82 @@ function renderDialPad() {
 }
 
 function renderCallHistory() {
+  // 日付ごとにグループ化
+  const today = '2025-01-24';
+  const yesterday = '2025-01-23';
+
+  const groupedCalls = {
+    today: mockCallHistory.filter(c => c.date === today),
+    yesterday: mockCallHistory.filter(c => c.date === yesterday),
+    older: mockCallHistory.filter(c => c.date !== today && c.date !== yesterday)
+  };
+
   return `
     <div class="call-history">
-      ${mockCallHistory.map(call => `
-        <div class="history-item" onclick="navigate('dial', { phone: '${call.name}', customer: mockCustomers.find(c => c.name === '${call.name}') })">
-          <div class="call-icon ${call.type}">
-            ${call.type === 'incoming' ? getIcon('PhoneIncoming') : ''}
-            ${call.type === 'outgoing' ? getIcon('PhoneOutgoing') : ''}
-            ${call.type === 'missed' ? getIcon('PhoneOff') : ''}
-          </div>
-          <div class="history-info">
-            <span class="history-name">${call.name}</span>
-            <span class="history-company">${call.company}</span>
-          </div>
-          <div class="history-meta">
-            <span class="history-time">${call.time}</span>
-            <span class="history-duration">${call.duration}</span>
-          </div>
+      ${groupedCalls.today.length > 0 ? `
+        <div class="history-date-group">
+          <span class="history-date-label">今日</span>
         </div>
-      `).join('')}
+        ${groupedCalls.today.map(call => renderCallHistoryItem(call)).join('')}
+      ` : ''}
+
+      ${groupedCalls.yesterday.length > 0 ? `
+        <div class="history-date-group">
+          <span class="history-date-label">昨日</span>
+        </div>
+        ${groupedCalls.yesterday.map(call => renderCallHistoryItem(call)).join('')}
+      ` : ''}
+
+      ${groupedCalls.older.length > 0 ? `
+        <div class="history-date-group">
+          <span class="history-date-label">それ以前</span>
+        </div>
+        ${groupedCalls.older.map(call => renderCallHistoryItem(call)).join('')}
+      ` : ''}
     </div>
   `;
+}
+
+function renderCallHistoryItem(call) {
+  return `
+    <div class="history-item">
+      <div class="history-item-main" onclick="navigate('dial', { phone: '${call.name}', customer: mockCustomers.find(c => c.name === '${call.name}') })">
+        <div class="call-icon ${call.type}">
+          ${call.type === 'incoming' ? getIcon('PhoneIncoming') : ''}
+          ${call.type === 'outgoing' ? getIcon('PhoneOutgoing') : ''}
+          ${call.type === 'missed' ? getIcon('PhoneOff') : ''}
+        </div>
+        <div class="history-info">
+          <span class="history-name">${call.name}</span>
+          <span class="history-company">${call.company}</span>
+        </div>
+        <div class="history-meta">
+          <span class="history-time">${call.time}</span>
+          <span class="history-duration">${call.duration}</span>
+        </div>
+      </div>
+      ${call.recordingUrl ? `
+        <div class="history-actions">
+          <a href="${call.recordingUrl}" target="_blank" class="recording-btn" onclick="event.stopPropagation()">
+            ${getIcon('Play')} 録音
+          </a>
+          ${call.hasTranscription ? `
+            <button class="transcript-btn" onclick="event.stopPropagation(); showCallTranscript(${call.id})">
+              ${getIcon('FileText')}
+            </button>
+          ` : ''}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function showCallTranscript(callId) {
+  // デモ用: 文字起こしを表示
+  const call = mockCallHistory.find(c => c.id === callId);
+  if (call) {
+    navigate('call-detail', { call: call });
+  }
 }
 
 function renderContacts() {
