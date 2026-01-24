@@ -35,15 +35,19 @@
 }
 
 .screen-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
   background: var(--bg-card);
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 10;
+  z-index: 50;
 }
 
 .screen-header h1 {
@@ -76,7 +80,7 @@
 
 .header-info { flex: 1; }
 .header-subtitle { font-size: 12px; color: var(--text-tertiary); }
-.screen-content { padding: 16px 20px; }
+.screen-content { padding: 16px 20px; padding-top: 72px; }
 
 .section { margin-bottom: 24px; }
 .section-title {
@@ -291,9 +295,10 @@
 .timeline-duration, .timeline-channel { display: inline-block; margin-top: 8px; font-size: 12px; padding: 2px 8px; border-radius: 4px; background: var(--bg); color: var(--text-secondary); }
 
 /* Phone Screen */
-.phone-tabs { display: flex; background: var(--bg-card); border-bottom: 1px solid var(--border); }
+.phone-tabs { display: flex; background: var(--bg-card); border-bottom: 1px solid var(--border); margin-top: 56px; }
 .phone-tab { flex: 1; padding: 12px; background: none; border: none; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; }
 .phone-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.phone-screen .screen-content { padding-top: 16px; }
 
 /* Dial Pad */
 .dial-pad-container { display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
@@ -337,7 +342,7 @@
 .unread-badge { width: 20px; height: 20px; border-radius: 50%; background: var(--danger); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
 
 /* Messaging Screen */
-.channel-selector { display: flex; padding: 8px 20px; gap: 8px; background: var(--bg-card); border-bottom: 1px solid var(--border); }
+.channel-selector { display: flex; padding: 8px 20px; gap: 8px; background: var(--bg-card); border-bottom: 1px solid var(--border); margin-top: 56px; }
 .channel-btn { padding: 8px 20px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); font-size: 13px; font-weight: 500; cursor: pointer; }
 .channel-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 .messages-container { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; height: calc(100vh - 200px); }
