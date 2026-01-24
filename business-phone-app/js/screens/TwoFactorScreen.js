@@ -1,5 +1,5 @@
 // 2要素認証画面
-let twoFactorCode = '';
+let twoFactorCode = ['', '', '', '', '', ''];
 let twoFactorError = '';
 let twoFactorMethod = 'sms'; // 'sms' | 'email' | 'app'
 let resendTimer = 0;
@@ -39,18 +39,24 @@ function renderTwoFactorScreen() {
           ${twoFactorError ? `<div class="login-error">${getIcon('AlertTriangle')} ${twoFactorError}</div>` : ''}
 
           <div class="code-input-container">
-            <input
-              type="text"
-              class="code-input"
-              maxlength="6"
-              placeholder="000000"
-              value="${twoFactorCode}"
-              oninput="updateTwoFactorCode(this.value)"
-              autocomplete="one-time-code"
-            />
+            ${[0, 1, 2, 3, 4, 5].map(i => `
+              <input
+                type="text"
+                inputmode="numeric"
+                class="code-input-digit"
+                maxlength="1"
+                id="code-digit-${i}"
+                value="${twoFactorCode[i]}"
+                oninput="handleCodeInput(${i}, this)"
+                onkeydown="handleCodeKeydown(event, ${i})"
+                onpaste="handleCodePaste(event)"
+                onfocus="this.select()"
+                autocomplete="${i === 0 ? 'one-time-code' : 'off'}"
+              />
+            `).join('')}
           </div>
 
-          <button type="submit" class="login-btn" ${twoFactorCode.length !== 6 ? 'disabled' : ''}>
+          <button type="submit" class="login-btn" ${twoFactorCode.join('').length !== 6 ? 'disabled' : ''}>
             認証する
           </button>
         </form>
@@ -73,16 +79,89 @@ function renderTwoFactorScreen() {
   `;
 }
 
-function updateTwoFactorCode(value) {
-  // 数字のみ許可
-  twoFactorCode = value.replace(/[^0-9]/g, '').slice(0, 6);
+function handleCodeInput(index, input) {
+  const value = input.value.replace(/[^0-9]/g, '');
+
+  if (value.length > 0) {
+    twoFactorCode[index] = value.slice(-1);
+
+    // 次のフィールドに自動フォーカス
+    if (index < 5) {
+      const nextInput = document.getElementById(`code-digit-${index + 1}`);
+      if (nextInput) {
+        nextInput.focus();
+      }
+    }
+  } else {
+    twoFactorCode[index] = '';
+  }
+
   render();
+
+  // フォーカスを維持
+  setTimeout(() => {
+    if (value.length > 0 && index < 5) {
+      const nextInput = document.getElementById(`code-digit-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    } else {
+      const currentInput = document.getElementById(`code-digit-${index}`);
+      if (currentInput) currentInput.focus();
+    }
+  }, 0);
+}
+
+function handleCodeKeydown(event, index) {
+  // バックスペースで前のフィールドに戻る
+  if (event.key === 'Backspace' && twoFactorCode[index] === '' && index > 0) {
+    event.preventDefault();
+    const prevInput = document.getElementById(`code-digit-${index - 1}`);
+    if (prevInput) {
+      twoFactorCode[index - 1] = '';
+      render();
+      setTimeout(() => {
+        const input = document.getElementById(`code-digit-${index - 1}`);
+        if (input) input.focus();
+      }, 0);
+    }
+  }
+
+  // 左右矢印キーでフィールド間移動
+  if (event.key === 'ArrowLeft' && index > 0) {
+    event.preventDefault();
+    const prevInput = document.getElementById(`code-digit-${index - 1}`);
+    if (prevInput) prevInput.focus();
+  }
+  if (event.key === 'ArrowRight' && index < 5) {
+    event.preventDefault();
+    const nextInput = document.getElementById(`code-digit-${index + 1}`);
+    if (nextInput) nextInput.focus();
+  }
+}
+
+function handleCodePaste(event) {
+  event.preventDefault();
+  const pastedData = (event.clipboardData || window.clipboardData).getData('text');
+  const digits = pastedData.replace(/[^0-9]/g, '').slice(0, 6);
+
+  for (let i = 0; i < 6; i++) {
+    twoFactorCode[i] = digits[i] || '';
+  }
+
+  render();
+
+  // 最後に入力されたフィールドにフォーカス
+  setTimeout(() => {
+    const focusIndex = Math.min(digits.length, 5);
+    const input = document.getElementById(`code-digit-${focusIndex}`);
+    if (input) input.focus();
+  }, 0);
 }
 
 function handleTwoFactorSubmit(event) {
   event.preventDefault();
 
-  if (twoFactorCode.length !== 6) {
+  const code = twoFactorCode.join('');
+  if (code.length !== 6) {
     twoFactorError = '6桁の認証コードを入力してください';
     render();
     return;
@@ -90,7 +169,7 @@ function handleTwoFactorSubmit(event) {
 
   // デモ用: 任意の6桁コードで認証成功とする
   twoFactorError = '';
-  twoFactorCode = '';
+  twoFactorCode = ['', '', '', '', '', ''];
 
   // 認証成功 - ログイン完了
   completeLogin();
@@ -98,7 +177,7 @@ function handleTwoFactorSubmit(event) {
 }
 
 function backToLogin() {
-  twoFactorCode = '';
+  twoFactorCode = ['', '', '', '', '', ''];
   twoFactorError = '';
   AppState.pendingAuth = null;
   AppState.screenStack = [{ screen: 'login' }];
