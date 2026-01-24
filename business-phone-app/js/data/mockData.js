@@ -1,5 +1,22 @@
 // ダミーデータ
 
+// 日付ヘルパー関数（デモ用に相対日付を生成）
+function getRelativeDate(daysOffset) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysOffset);
+  return date.toISOString().split('T')[0];
+}
+
+function getRelativeDateTime(daysOffset, time = '10:00') {
+  return `${getRelativeDate(daysOffset)}T${time}:00`;
+}
+
+function formatRelativeDate(daysOffset) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysOffset);
+  return date.toLocaleDateString('ja-JP');
+}
+
 // ログインユーザー情報
 const mockUser = {
   id: 1,
@@ -143,6 +160,7 @@ const mockNotifications = [
 ];
 
 // タスク/リマインダー（ユーザーが設定したフォローアップ予定）
+// 注: 日付は相対日付で動的に生成（デモが日付に依存しないように）
 const mockTasks = [
   {
     id: 1,
@@ -152,9 +170,9 @@ const mockTasks = [
     type: 'follow_up_call',
     title: 'フォローアップ電話',
     note: '見積書について確認の電話',
-    dueDate: '2025-01-31',
+    dueDate: getRelativeDate(7), // 1週間後
     dueTime: '10:00',
-    createdAt: '2025-01-24T10:30:00',
+    createdAt: getRelativeDateTime(0, '10:30'),
     completed: false,
     activityId: 1
   },
@@ -166,9 +184,9 @@ const mockTasks = [
     type: 'close_deal',
     title: '契約締結',
     note: '契約書の最終確認と締結',
-    dueDate: '2025-01-27',
+    dueDate: getRelativeDate(3), // 3日後
     dueTime: '14:00',
-    createdAt: '2025-01-24T09:15:00',
+    createdAt: getRelativeDateTime(0, '09:15'),
     completed: false,
     activityId: 2
   },
@@ -180,9 +198,9 @@ const mockTasks = [
     type: 'send_materials',
     title: '資料送付',
     note: '詳細提案資料をメールで送付',
-    dueDate: '2025-01-25',
+    dueDate: getRelativeDate(1), // 明日
     dueTime: '09:00',
-    createdAt: '2025-01-22T11:30:00',
+    createdAt: getRelativeDateTime(-2, '11:30'),
     completed: false,
     activityId: 3
   },
@@ -194,9 +212,9 @@ const mockTasks = [
     type: 'follow_up_call',
     title: 'フォローアップ電話',
     note: '先月の提案について再度連絡',
-    dueDate: '2025-01-24',
+    dueDate: getRelativeDate(0), // 今日
     dueTime: '15:00',
-    createdAt: '2025-01-20T10:00:00',
+    createdAt: getRelativeDateTime(-4, '10:00'),
     completed: false,
     activityId: null
   },
