@@ -3,12 +3,37 @@ function renderCustomerDetailScreen(customer) {
   const riskColors = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
   const riskLabels = { high: '高リスク', medium: '中リスク', low: '低リスク' };
 
-  const timeline = [
-    { type: 'call', time: '2025-01-20 10:30', content: '商品説明の電話', duration: '15:32' },
-    { type: 'line', time: '2025-01-18 14:00', content: '見積書送付', channel: 'LINE' },
-    { type: 'call', time: '2025-01-15 09:00', content: '初回ヒアリング', duration: '25:10' },
-    { type: 'sms', time: '2025-01-10 11:30', content: 'アポイント確認SMS', channel: 'SMS' },
-  ];
+  // 顧客に関連する活動履歴を取得
+  const customerActivities = mockActivities
+    .filter(a => a.customerId === customer.id)
+    .map(a => ({
+      id: a.id,
+      type: 'call',
+      time: new Date(a.createdAt).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+      content: a.note,
+      duration: a.duration,
+      recordingUrl: a.recordingUrl,
+      hasTranscription: true
+    }));
+
+  // 通話履歴からも取得
+  const customerCalls = mockCallHistory
+    .filter(c => c.name === customer.name)
+    .map(c => ({
+      id: c.id,
+      type: 'call',
+      time: `${c.date} ${c.time}`,
+      content: c.type === 'incoming' ? '着信' : c.type === 'outgoing' ? '発信' : '不在着信',
+      duration: c.duration,
+      recordingUrl: c.recordingUrl,
+      hasTranscription: c.hasTranscription,
+      callData: c
+    }));
+
+  // 重複を避けて統合し、日時順にソート
+  const timeline = [...customerActivities, ...customerCalls]
+    .sort((a, b) => new Date(b.time) - new Date(a.time))
+    .slice(0, 10); // 最新10件
 
   return `
     <div class="screen customer-detail-screen">
@@ -79,7 +104,7 @@ function renderCustomerDetailScreen(customer) {
         <section class="section">
           <h3 class="section-title">${getIcon('Clock')} 対応履歴</h3>
           <div class="timeline">
-            ${timeline.map(item => `
+            ${timeline.length > 0 ? timeline.map(item => `
               <div class="timeline-item ${item.type}">
                 <div class="timeline-icon">
                   ${item.type === 'call' ? getIcon('Phone') : getIcon('MessageCircle')}
@@ -87,11 +112,30 @@ function renderCustomerDetailScreen(customer) {
                 <div class="timeline-content">
                   <span class="timeline-time">${item.time}</span>
                   <p class="timeline-text">${item.content}</p>
-                  ${item.duration ? `<span class="timeline-duration">${item.duration}</span>` : ''}
+                  ${item.duration ? `<span class="timeline-duration">${getIcon('Clock')} ${item.duration}</span>` : ''}
                   ${item.channel ? `<span class="timeline-channel">${item.channel}</span>` : ''}
+
+                  ${item.recordingUrl || item.hasTranscription ? `
+                    <div class="timeline-actions">
+                      ${item.recordingUrl ? `
+                        <a href="${item.recordingUrl}" target="_blank" class="timeline-action-btn recording" onclick="event.stopPropagation()">
+                          ${getIcon('Play')} 録音
+                        </a>
+                      ` : ''}
+                      ${item.hasTranscription && item.callData ? `
+                        <button class="timeline-action-btn transcript" onclick="showCallTranscript(${item.callData.id})">
+                          ${getIcon('FileText')} 文字起こし
+                        </button>
+                      ` : ''}
+                    </div>
+                  ` : ''}
                 </div>
               </div>
-            `).join('')}
+            `).join('') : `
+              <div class="timeline-empty">
+                <p>対応履歴がありません</p>
+              </div>
+            `}
           </div>
         </section>
       </div>
