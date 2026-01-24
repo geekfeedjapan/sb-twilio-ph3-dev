@@ -269,6 +269,7 @@
 .action-btn.call { background: var(--call-green); color: white; }
 .action-btn.message { background: var(--primary); color: white; }
 .action-btn.email { background: var(--bg); color: var(--text-primary); border: 1px solid var(--border); }
+.action-btn.activity { background: #8b5cf6; color: white; }
 .action-btn span { font-size: 12px; font-weight: 500; }
 
 /* Info List */
