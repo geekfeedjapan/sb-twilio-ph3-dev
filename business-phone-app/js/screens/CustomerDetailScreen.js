@@ -67,9 +67,9 @@ function renderCustomerDetailScreen(customer) {
             ${getIcon('MessageCircle')}
             <span>メッセージ</span>
           </button>
-          <button class="action-btn email">
-            ${getIcon('Mail')}
-            <span>メール</span>
+          <button class="action-btn activity" onclick="addActivityForCustomer(${customer.id})">
+            ${getIcon('FileText')}
+            <span>活動登録</span>
           </button>
         </div>
 
@@ -141,4 +141,17 @@ function renderCustomerDetailScreen(customer) {
       </div>
     </div>
   `;
+}
+
+// 顧客詳細画面から活動登録画面へ遷移
+function addActivityForCustomer(customerId) {
+  const customer = mockCustomers.find(c => c.id === customerId);
+  if (customer) {
+    navigate('activity-registration', {
+      customer: customer,
+      duration: null,
+      transcription: null,
+      recordingUrl: null
+    });
+  }
 }

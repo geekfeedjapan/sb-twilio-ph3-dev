@@ -46,7 +46,7 @@ function renderActivityRegistrationScreen(customer, duration, transcription, rec
             </div>
           </div>
           <div class="activity-call-meta">
-            <span class="call-duration">${getIcon('Clock')} ${duration}</span>
+            ${duration ? `<span class="call-duration">${getIcon('Clock')} ${duration}</span>` : ''}
             <span class="call-date">${new Date().toLocaleDateString('ja-JP')}</span>
           </div>
         </div>
@@ -103,10 +103,10 @@ function renderActivityRegistrationScreen(customer, duration, transcription, rec
         </div>
 
         <div class="form-section">
-          <label class="section-label">メモ（AI要約から編集可）</label>
+          <label class="section-label">${transcription ? 'メモ（AI要約から編集可）' : 'メモ'}</label>
           <textarea
             class="activity-note-input"
-            placeholder="通話内容のメモを入力..."
+            placeholder="活動内容のメモを入力..."
             oninput="updateActivityNote(this.value)"
           >${activityNote}</textarea>
         </div>
@@ -177,17 +177,28 @@ function saveActivity() {
   // 状態リセット
   resetActivityForm();
 
-  // ホームに戻る
-  AppState.activeTab = 'home';
-  AppState.screenStack = [{ screen: 'home' }];
-  render();
+  // 前の画面に戻る（顧客詳細から来た場合）または ホームに戻る
+  if (AppState.screenStack.length > 1) {
+    AppState.screenStack.pop();
+    render();
+  } else {
+    AppState.activeTab = 'home';
+    AppState.screenStack = [{ screen: 'home' }];
+    render();
+  }
 }
 
 function skipActivityRegistration() {
   resetActivityForm();
-  AppState.activeTab = 'home';
-  AppState.screenStack = [{ screen: 'home' }];
-  render();
+  // 前の画面に戻る
+  if (AppState.screenStack.length > 1) {
+    AppState.screenStack.pop();
+    render();
+  } else {
+    AppState.activeTab = 'home';
+    AppState.screenStack = [{ screen: 'home' }];
+    render();
+  }
 }
 
 function resetActivityForm() {
