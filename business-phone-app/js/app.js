@@ -1,7 +1,15 @@
 // アプリケーション状態管理
 const AppState = {
+  // 認証状態
+  isAuthenticated: false,
+  currentUser: null,
+  pendingAuth: null,
+
+  // ナビゲーション状態
   activeTab: 'home',
-  screenStack: [{ screen: 'home' }],
+  screenStack: [{ screen: 'login' }],
+
+  // 通話状態
   showIncomingCall: false,
   incomingCustomer: null,
   callDuration: 0,
@@ -29,6 +37,8 @@ function goBack() {
 
 // タブ切り替え
 function changeTab(tab) {
+  if (!AppState.isAuthenticated) return;
+
   AppState.activeTab = tab;
   AppState.screenStack = [{ screen: tab }];
   render();
@@ -36,6 +46,8 @@ function changeTab(tab) {
 
 // 着信シミュレーション
 function simulateIncomingCall() {
+  if (!AppState.isAuthenticated) return;
+
   AppState.incomingCustomer = mockCustomers[0];
   AppState.showIncomingCall = true;
   render();
@@ -95,8 +107,10 @@ function startCallTimer() {
 
 // ボトムナビを表示するかどうか
 function shouldShowBottomNav() {
+  if (!AppState.isAuthenticated) return false;
+
   const currentScreen = getCurrentScreen();
-  const hideNavScreens = ['calling', 'dial', 'customer-detail', 'messaging', 'call-end', 'incoming'];
+  const hideNavScreens = ['calling', 'dial', 'customer-detail', 'messaging', 'call-end', 'incoming', 'user-profile'];
   return !hideNavScreens.includes(currentScreen.screen) && !AppState.showIncomingCall;
 }
 
@@ -104,10 +118,20 @@ function shouldShowBottomNav() {
 function render() {
   const app = document.getElementById('app');
   const currentScreen = getCurrentScreen();
-  
+
   let content = '';
-  
-  if (AppState.showIncomingCall) {
+
+  // 認証されていない場合はログイン関連画面を表示
+  if (!AppState.isAuthenticated) {
+    switch (currentScreen.screen) {
+      case 'two-factor':
+        content = renderTwoFactorScreen();
+        break;
+      case 'login':
+      default:
+        content = renderLoginScreen();
+    }
+  } else if (AppState.showIncomingCall) {
     content = renderIncomingCallScreen(AppState.incomingCustomer);
   } else {
     switch (currentScreen.screen) {
@@ -142,17 +166,20 @@ function render() {
       case 'settings':
         content = renderSettingsScreen();
         break;
+      case 'user-profile':
+        content = renderUserProfileScreen();
+        break;
       default:
         content = renderHomeScreen();
     }
   }
-  
+
   // ボトムナビ
   if (shouldShowBottomNav()) {
     content += renderBottomNav();
     content += renderDemoFab();
   }
-  
+
   app.innerHTML = content;
 }
 
@@ -165,7 +192,7 @@ function renderBottomNav() {
     { id: 'talk', icon: 'MessageCircle', label: 'トーク' },
     { id: 'settings', icon: 'Settings', label: '設定' },
   ];
-  
+
   return `
     <nav class="bottom-nav">
       ${tabs.map(tab => `
