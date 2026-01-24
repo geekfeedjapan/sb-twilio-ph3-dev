@@ -1670,3 +1670,71 @@
   width: 16px;
   height: 16px;
 }
+
+/* Timeline action buttons in customer detail */
+.timeline-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.timeline-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.timeline-action-btn.recording {
+  background: #f0f9ff;
+  color: var(--primary);
+}
+
+.timeline-action-btn.recording:hover {
+  background: #e0f2fe;
+}
+
+.timeline-action-btn.transcript {
+  background: var(--bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.timeline-action-btn.transcript:hover {
+  background: #f3f4f6;
+  color: var(--text-primary);
+}
+
+.timeline-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.timeline-item .timeline-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timeline-item .timeline-duration svg {
+  width: 12px;
+  height: 12px;
+}
+
+.timeline-empty {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-tertiary);
+}
+
+.timeline-empty p {
+  margin: 0;
+  font-size: 14px;
+}
