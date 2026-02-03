@@ -8,6 +8,9 @@ function renderHomeScreen() {
   const todayTasks = mockTasks.filter(t => !t.completed && t.dueDate <= today);
   const overdueTasks = mockTasks.filter(t => !t.completed && t.dueDate < today);
 
+  // 不在着信を取得
+  const missedCalls = mockCallHistory.filter(c => c.type === 'missed' && c.name !== '不明');
+
   return `
     <div class="screen home-screen">
       <header class="screen-header">
@@ -21,6 +24,30 @@ function renderHomeScreen() {
       </header>
 
       <div class="screen-content">
+        ${missedCalls.length > 0 ? `
+          <section class="section">
+            <h2 class="section-title">${getIcon('PhoneMissed')} 不在着信</h2>
+            <div class="missed-call-cards">
+              ${missedCalls.map(call => {
+                const customer = mockCustomers.find(c => c.name === call.name);
+                return `
+                  <div class="missed-call-card" onclick="navigate('missed-call-action', { call: mockCallHistory.find(c => c.id === ${call.id}), customer: mockCustomers.find(c => c.name === '${call.name}') })">
+                    <div class="missed-call-icon">${getIcon('PhoneMissed')}</div>
+                    <div class="missed-call-info">
+                      <span class="missed-call-name">${call.name}</span>
+                      <span class="missed-call-company">${call.company}</span>
+                    </div>
+                    <div class="missed-call-meta">
+                      <span class="missed-call-time">${call.date} ${call.time}</span>
+                      <span class="missed-call-action-hint">対応する ${getIcon('ChevronRight')}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </section>
+        ` : ''}
+
         ${todayTasks.length > 0 ? `
           <section class="section task-summary-section" onclick="navigate('tasks')">
             <h2 class="section-title">${getIcon('Calendar')} 今日のタスク</h2>
