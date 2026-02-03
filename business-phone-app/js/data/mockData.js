@@ -151,6 +151,82 @@ const mockConversations = [
   { id: 3, name: '田中 美咲', lastMessage: '契約書について確認です', time: '昨日', unread: 1, channel: 'line', company: 'グローバルテック' },
 ];
 
+// メッセージ対応履歴（SMS/LINE）
+const mockMessageHistory = [
+  {
+    id: 1,
+    customerId: 1,
+    customerName: '山田 太郎',
+    channel: 'line',
+    direction: 'sent',
+    message: '見積書をお送りいたします。ご確認のほどよろしくお願いいたします。',
+    createdAt: '2025-01-24T14:05:00'
+  },
+  {
+    id: 2,
+    customerId: 1,
+    customerName: '山田 太郎',
+    channel: 'line',
+    direction: 'received',
+    message: 'ありがとうございます。確認して折り返しご連絡いたします。',
+    createdAt: '2025-01-24T14:10:00'
+  },
+  {
+    id: 3,
+    customerId: 2,
+    customerName: '佐藤 花子',
+    channel: 'sms',
+    direction: 'sent',
+    message: '先ほどはお電話ありがとうございました。契約書を本日中にお送りいたします。',
+    createdAt: '2025-01-24T09:30:00'
+  },
+  {
+    id: 4,
+    customerId: 2,
+    customerName: '佐藤 花子',
+    channel: 'sms',
+    direction: 'received',
+    message: 'お世話になっております。契約書の受領確認いたしました。',
+    createdAt: '2025-01-23T16:00:00'
+  },
+  {
+    id: 5,
+    customerId: 4,
+    customerName: '田中 美咲',
+    channel: 'line',
+    direction: 'received',
+    message: '契約書について確認したい点がございます。お手すきの際にご連絡いただけますか。',
+    createdAt: '2025-01-23T11:00:00'
+  },
+  {
+    id: 6,
+    customerId: 4,
+    customerName: '田中 美咲',
+    channel: 'line',
+    direction: 'sent',
+    message: 'ご連絡ありがとうございます。本日15時にお電話させていただきます。',
+    createdAt: '2025-01-23T11:30:00'
+  },
+  {
+    id: 7,
+    customerId: 3,
+    customerName: '鈴木 一郎',
+    channel: 'sms',
+    direction: 'sent',
+    message: '先日はお打ち合わせありがとうございました。提案資料を改めてお送りいたします。',
+    createdAt: '2025-01-22T17:00:00'
+  },
+  {
+    id: 8,
+    customerId: 5,
+    customerName: '高橋 健一',
+    channel: 'line',
+    direction: 'received',
+    message: '来週のミーティングの日程を調整させてください。',
+    createdAt: '2025-01-21T10:00:00'
+  },
+];
+
 const mockNotifications = [
   { id: 1, type: 'risk', message: '山田太郎様との通話でNGワード検出', time: '10分前', timestamp: '2025-01-24T10:20:00', priority: 'high', read: false },
   { id: 2, type: 'system', message: '佐藤花子様との契約が承認されました', time: '1時間前', timestamp: '2025-01-24T09:30:00', priority: 'medium', read: false },

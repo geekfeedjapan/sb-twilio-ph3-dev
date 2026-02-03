@@ -30,10 +30,25 @@ function renderCustomerDetailScreen(customer) {
       callData: c
     }));
 
+  // SMS/LINEメッセージ履歴を取得
+  const channelLabels = { line: 'LINE', sms: 'SMS' };
+  const directionLabels = { sent: '送信', received: '受信' };
+  const customerMessages = (typeof mockMessageHistory !== 'undefined' ? mockMessageHistory : [])
+    .filter(m => m.customerId === customer.id)
+    .map(m => ({
+      id: `msg-${m.id}`,
+      type: m.channel,
+      channel: channelLabels[m.channel] || m.channel,
+      time: new Date(m.createdAt).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+      content: `【${directionLabels[m.direction]}】${m.message}`,
+      direction: m.direction,
+      messageData: m
+    }));
+
   // 重複を避けて統合し、日時順にソート
-  const timeline = [...customerActivities, ...customerCalls]
+  const timeline = [...customerActivities, ...customerCalls, ...customerMessages]
     .sort((a, b) => new Date(b.time) - new Date(a.time))
-    .slice(0, 10); // 最新10件
+    .slice(0, 15); // 最新15件
 
   return `
     <div class="screen customer-detail-screen">
@@ -107,7 +122,7 @@ function renderCustomerDetailScreen(customer) {
             ${timeline.length > 0 ? timeline.map(item => `
               <div class="timeline-item ${item.type}">
                 <div class="timeline-icon">
-                  ${item.type === 'call' ? getIcon('Phone') : getIcon('MessageCircle')}
+                  ${item.type === 'call' ? getIcon('Phone') : item.type === 'sms' ? getIcon('Smartphone') : getIcon('MessageCircle')}
                 </div>
                 <div class="timeline-content">
                   <span class="timeline-time">${item.time}</span>
