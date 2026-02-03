@@ -3,13 +3,24 @@ function renderCustomerDetailScreen(customer) {
   const riskColors = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
   const riskLabels = { high: '高リスク', medium: '中リスク', low: '低リスク' };
 
+  // 日時フォーマット用ヘルパー
+  const formatDateTime = (isoString) => {
+    const d = new Date(isoString);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `${mm}/${dd} ${hh}:${mi}`;
+  };
+
   // 顧客に関連する活動履歴を取得
   const customerActivities = mockActivities
     .filter(a => a.customerId === customer.id)
     .map(a => ({
       id: a.id,
       type: 'call',
-      time: new Date(a.createdAt).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+      sortTime: a.createdAt,
+      time: formatDateTime(a.createdAt),
       content: a.note,
       duration: a.duration,
       recordingUrl: a.recordingUrl,
@@ -22,6 +33,7 @@ function renderCustomerDetailScreen(customer) {
     .map(c => ({
       id: c.id,
       type: 'call',
+      sortTime: `${c.date}T${c.time}:00`,
       time: `${c.date} ${c.time}`,
       content: c.type === 'incoming' ? '着信' : c.type === 'outgoing' ? '発信' : '不在着信',
       duration: c.duration,
@@ -39,7 +51,8 @@ function renderCustomerDetailScreen(customer) {
       id: `msg-${m.id}`,
       type: m.channel,
       channel: channelLabels[m.channel] || m.channel,
-      time: new Date(m.createdAt).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+      sortTime: m.createdAt,
+      time: formatDateTime(m.createdAt),
       content: `【${directionLabels[m.direction]}】${m.message}`,
       direction: m.direction,
       messageData: m
@@ -47,7 +60,7 @@ function renderCustomerDetailScreen(customer) {
 
   // 重複を避けて統合し、日時順にソート
   const timeline = [...customerActivities, ...customerCalls, ...customerMessages]
-    .sort((a, b) => new Date(b.time) - new Date(a.time))
+    .sort((a, b) => new Date(b.sortTime) - new Date(a.sortTime))
     .slice(0, 15); // 最新15件
 
   return `
