@@ -2440,3 +2440,342 @@
   width: 14px;
   height: 14px;
 }
+
+/* =========================================
+   Home - Missed Call Cards
+   ========================================= */
+
+.missed-call-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.missed-call-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border-left: 4px solid var(--danger);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.missed-call-card:hover {
+  background: #fef2f2;
+}
+
+.missed-call-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #991b1b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.missed-call-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.missed-call-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.missed-call-name {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.missed-call-company {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.missed-call-meta {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.missed-call-time {
+  display: block;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.missed-call-action-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.missed-call-action-hint svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* =========================================
+   Missed Call Action Screen (AI提案)
+   ========================================= */
+
+.missed-call-action-screen .screen-content {
+  padding: 16px;
+}
+
+.missed-call-detail-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.missed-call-detail-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.missed-call-detail-info h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.missed-call-detail-info p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.missed-call-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.missed-call-detail-meta svg {
+  width: 16px;
+  height: 16px;
+}
+
+.missed-call-customer-summary {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.customer-summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.customer-summary-row:last-child {
+  border-bottom: none;
+}
+
+.customer-summary-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.customer-summary-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.customer-summary-value.status-hot {
+  color: var(--danger);
+}
+
+.customer-summary-value.status-warm {
+  color: var(--warning);
+}
+
+.customer-summary-value.status-cold {
+  color: var(--text-tertiary);
+}
+
+.ai-suggest-section {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.ai-suggest-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ai-suggest-header svg {
+  width: 20px;
+  height: 20px;
+  color: var(--primary);
+}
+
+.ai-suggest-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.ai-suggest-reason {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.ai-action-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-action-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.ai-action-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.ai-action-card.recommended {
+  border-color: var(--primary);
+  background: #f0f9ff;
+}
+
+.ai-action-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-action-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-action-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ai-action-icon.call {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.ai-action-icon.sms {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.ai-action-icon.line {
+  background: #dcfce7;
+  color: #06c755;
+}
+
+.ai-action-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-action-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ai-action-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.ai-recommend-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: var(--primary);
+  padding: 3px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.ai-action-preview {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.ai-action-preview .preview-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.ai-action-preview p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.missed-call-other-actions {
+  margin-top: 12px;
+}
+
+.missed-call-other-actions .secondary-btn {
+  width: 100%;
+}

@@ -69,12 +69,23 @@ const mockCallHistory = [
   },
   {
     id: 3,
-    name: '不明',
+    name: '高橋 健一',
     time: '18:20',
-    date: '2025-01-23',
-    duration: '0:45',
+    date: '2025-01-24',
+    duration: '0:00',
     type: 'missed',
-    company: '',
+    company: 'ネクストイノベーション',
+    recordingUrl: null,
+    hasTranscription: false
+  },
+  {
+    id: 6,
+    name: '田中 美咲',
+    time: '16:45',
+    date: '2025-01-24',
+    duration: '0:00',
+    type: 'missed',
+    company: 'グローバルテック',
     recordingUrl: null,
     hasTranscription: false
   },
