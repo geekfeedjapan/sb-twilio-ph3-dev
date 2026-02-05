@@ -160,6 +160,8 @@ const mockConversations = [
   { id: 1, name: '山田 太郎', lastMessage: '見積書をご確認ください', time: '10:30', unread: 2, channel: 'line', company: '株式会社ABC商事' },
   { id: 2, name: '佐藤 花子', lastMessage: 'お電話ありがとうございました', time: '09:15', unread: 0, channel: 'sms', company: '田中建設株式会社' },
   { id: 3, name: '田中 美咲', lastMessage: '契約書について確認です', time: '昨日', unread: 1, channel: 'line', company: 'グローバルテック' },
+  { id: 4, name: '鈴木 一郎', lastMessage: '提案資料をSlackに共有しました', time: '昨日', unread: 0, channel: 'slack', company: '鈴木電機工業' },
+  { id: 5, name: '高橋 健一', lastMessage: 'ミーティング日程の件', time: '2日前', unread: 3, channel: 'slack', company: 'ネクストイノベーション' },
 ];
 
 // メッセージ対応履歴（SMS/LINE）
@@ -235,6 +237,51 @@ const mockMessageHistory = [
     direction: 'received',
     message: '来週のミーティングの日程を調整させてください。',
     createdAt: '2025-01-21T10:00:00'
+  },
+  {
+    id: 9,
+    customerId: 3,
+    customerName: '鈴木 一郎',
+    channel: 'slack',
+    direction: 'sent',
+    message: '提案資料をSlackに共有いたしました。ご確認よろしくお願いいたします。',
+    createdAt: '2025-01-23T15:00:00'
+  },
+  {
+    id: 10,
+    customerId: 3,
+    customerName: '鈴木 一郎',
+    channel: 'slack',
+    direction: 'received',
+    message: '確認しました。内容について来週打ち合わせをお願いできますか。',
+    createdAt: '2025-01-23T16:30:00'
+  },
+  {
+    id: 11,
+    customerId: 5,
+    customerName: '高橋 健一',
+    channel: 'slack',
+    direction: 'received',
+    message: 'ミーティングの日程ですが、来週火曜日の14時はいかがでしょうか。',
+    createdAt: '2025-01-22T09:00:00'
+  },
+  {
+    id: 12,
+    customerId: 5,
+    customerName: '高橋 健一',
+    channel: 'slack',
+    direction: 'sent',
+    message: '火曜14時で承知しました。会議室を予約しておきます。',
+    createdAt: '2025-01-22T09:30:00'
+  },
+  {
+    id: 13,
+    customerId: 1,
+    customerName: '山田 太郎',
+    channel: 'slack',
+    direction: 'received',
+    message: '先ほどの見積書の件、社内で検討を進めています。追加質問があればSlackでご連絡します。',
+    createdAt: '2025-01-24T15:00:00'
   },
 ];
 

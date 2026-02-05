@@ -122,6 +122,14 @@ function getMissedCallAISuggestions(call, customer) {
       description: 'カジュアルに素早く連絡',
       preview: `${customerName}様、お電話いただきありがとうございます。お手すきの際にお返事いただけますと幸いです。`,
       onclick: `executeMissedCallAction('line', '${customerName}')`
+    },
+    {
+      type: 'slack',
+      icon: getIcon('Slack'),
+      title: 'Slackで連絡',
+      description: '社内チャネル経由でメッセージ',
+      preview: `${customerName}様、先ほどお電話いただいた件、Slackでご連絡いたします。ご確認のほどよろしくお願いいたします。`,
+      onclick: `executeMissedCallAction('slack', '${customerName}')`
     }
   ];
 
@@ -130,7 +138,7 @@ function getMissedCallAISuggestions(call, customer) {
 
 // 不在着信アクション実行（SMS/LINE送信の確認）
 function executeMissedCallAction(channel, customerName) {
-  const channelLabel = channel === 'sms' ? 'SMS' : 'LINE';
+  const channelLabel = channel === 'sms' ? 'SMS' : channel === 'slack' ? 'Slack' : 'LINE';
   const customer = mockCustomers.find(c => c.name === customerName);
 
   if (confirm(`${customerName}様に${channelLabel}でメッセージを送信しますか？`)) {

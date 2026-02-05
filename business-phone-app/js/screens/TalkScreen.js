@@ -13,7 +13,7 @@ function renderTalkScreen() {
               <div class="conv-avatar">
                 ${conv.name[0]}
                 <span class="channel-badge ${conv.channel}">
-                  ${conv.channel === 'line' ? 'L' : 'S'}
+                  ${conv.channel === 'line' ? 'L' : conv.channel === 'slack' ? 'Sl' : 'S'}
                 </span>
               </div>
               <div class="conv-info">

@@ -24,6 +24,7 @@ function renderMessagingScreen(customer) {
       <div class="channel-selector">
         <button class="channel-btn ${messagingChannel === 'line' ? 'active' : ''}" onclick="setMessagingChannel('line')">LINE</button>
         <button class="channel-btn ${messagingChannel === 'sms' ? 'active' : ''}" onclick="setMessagingChannel('sms')">SMS</button>
+        <button class="channel-btn slack ${messagingChannel === 'slack' ? 'active' : ''}" onclick="setMessagingChannel('slack')">${getIcon('Slack')} Slack</button>
       </div>
 
       <div class="messages-container">
