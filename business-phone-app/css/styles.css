@@ -305,6 +305,7 @@
 .timeline-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .timeline-item.call .timeline-icon { background: #dcfce7; color: #166534; }
 .timeline-item.line .timeline-icon, .timeline-item.sms .timeline-icon { background: #dbeafe; color: #1e40af; }
+.timeline-item.slack .timeline-icon { background: #f3e8ff; color: #611f69; }
 .timeline-content { flex: 1; background: var(--bg-card); border-radius: 12px; padding: 12px; }
 .timeline-time { font-size: 12px; color: var(--text-tertiary); }
 .timeline-text { font-size: 14px; color: var(--text-primary); margin-top: 4px; }
@@ -349,6 +350,7 @@
 .channel-badge { position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: white; }
 .channel-badge.line { background: #06c755; }
 .channel-badge.sms { background: #3b82f6; }
+.channel-badge.slack { background: #611f69; font-size: 8px; }
 .conv-info { flex: 1; }
 .conv-header { display: flex; justify-content: space-between; margin-bottom: 2px; }
 .conv-name { font-weight: 600; color: var(--text-primary); }
@@ -361,6 +363,9 @@
 .channel-selector { display: flex; padding: 8px 20px; gap: 8px; background: var(--bg-card); border-bottom: 1px solid var(--border); margin-top: 56px; }
 .channel-btn { padding: 8px 20px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); font-size: 13px; font-weight: 500; cursor: pointer; }
 .channel-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.channel-btn.slack { display: inline-flex; align-items: center; gap: 4px; }
+.channel-btn.slack svg { width: 14px; height: 14px; }
+.channel-btn.slack.active { background: #611f69; border-color: #611f69; }
 .messages-container { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; height: calc(100vh - 200px); }
 .message { display: flex; }
 .message.sent { justify-content: flex-end; }
@@ -2721,6 +2726,11 @@
 .ai-action-icon.line {
   background: #dcfce7;
   color: #06c755;
+}
+
+.ai-action-icon.slack {
+  background: #f3e8ff;
+  color: #611f69;
 }
 
 .ai-action-info {

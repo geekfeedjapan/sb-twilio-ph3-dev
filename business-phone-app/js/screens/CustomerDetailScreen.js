@@ -43,7 +43,7 @@ function renderCustomerDetailScreen(customer) {
     }));
 
   // SMS/LINEメッセージ履歴を取得
-  const channelLabels = { line: 'LINE', sms: 'SMS' };
+  const channelLabels = { line: 'LINE', sms: 'SMS', slack: 'Slack' };
   const directionLabels = { sent: '送信', received: '受信' };
   const customerMessages = (typeof mockMessageHistory !== 'undefined' ? mockMessageHistory : [])
     .filter(m => m.customerId === customer.id)
@@ -135,7 +135,7 @@ function renderCustomerDetailScreen(customer) {
             ${timeline.length > 0 ? timeline.map(item => `
               <div class="timeline-item ${item.type}">
                 <div class="timeline-icon">
-                  ${item.type === 'call' ? getIcon('Phone') : item.type === 'sms' ? getIcon('Smartphone') : getIcon('MessageCircle')}
+                  ${item.type === 'call' ? getIcon('Phone') : item.type === 'sms' ? getIcon('Smartphone') : item.type === 'slack' ? getIcon('Slack') : getIcon('MessageCircle')}
                 </div>
                 <div class="timeline-content">
                   <span class="timeline-time">${item.time}</span>
